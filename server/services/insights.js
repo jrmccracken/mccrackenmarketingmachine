@@ -11,6 +11,7 @@ export function derive(source, t) {
         bounce_rate: ratio(v('bounces'), v('sent')), click_rate: ratio(v('clicks'), v('sent')) }
         : { open_rate: null, reply_rate: null, bounce_rate: null, click_rate: null }) };
     case 'forms':
+    case 'visitors':
       return { ...t };
     case 'ga4':
       return { ...t, engagement_rate: ratio(v('engaged_sessions'), v('sessions')), conversion_rate: ratio(v('conversions'), v('sessions')) };

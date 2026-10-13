@@ -2,6 +2,7 @@ import { db, now } from '../db.js';
 import { snapshot, campaigns, searchQueries } from './insights.js';
 import { daysAgo } from '../metrics.js';
 import { ask, aiEnabled, MODEL } from './ai.js';
+import { visitorInsights } from './visitors.js';
 
 const pct = (x, d = 1) => `${(x * 100).toFixed(d)}%`;
 const money = (x) => `£${x.toFixed(x < 100 ? 2 : 0)}`;
@@ -170,6 +171,13 @@ export function ruleRecommendations() {
     detail: 'Leads in replied/meeting/proposal stages go cold quickly.',
     action: 'Send a short, useful nudge: a relevant case study, a benchmark or a specific idea for their business.',
     impact: 'Revives stalled deals' });
+  // Company visitors showing buying intent who aren't in the pipeline yet.
+  const hotVisitors = visitorInsights(14).orgs.filter((o) => o.band === 'High' && !o.leadId);
+  if (hotVisitors.length) add({ fp: `visitors:hot:${hotVisitors.map((o) => o.name).join('|')}`, source: 'leads', priority: 'high',
+    title: `${hotVisitors.length} compan${hotVisitors.length > 1 ? 'ies are' : 'y is'} showing buying intent on your website`,
+    detail: hotVisitors.slice(0, 4).map((o) => `${o.name} (${o.top.slice(0, 2).map((p) => p.path).join(', ')})`).join('; '),
+    action: 'Open Company visitors, add them as leads, find the decision maker on LinkedIn and send a short, relevant note. Don\'t mention you saw them on the site.',
+    impact: 'Warm outbound to companies already looking' });
   // Website enquiries (Netlify Forms) that nobody has answered yet.
   const unanswered = db.prepare(`SELECT COUNT(*) n, MIN(created_at) oldest FROM leads
     WHERE external_id LIKE 'netlify:%' AND stage = 'new' AND last_contacted_at IS NULL`).get();

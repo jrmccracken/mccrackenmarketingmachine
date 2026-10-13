@@ -5,6 +5,7 @@ import Overview from './pages/Overview.jsx';
 import { EmailPage, SocialPage, WebsitePage, SearchPage, PaidPage } from './pages/Channels.jsx';
 import Recommendations from './pages/Recommendations.jsx';
 import Radar from './pages/Radar.jsx';
+import Visitors from './pages/Visitors.jsx';
 import Leads from './pages/Leads.jsx';
 import LeadDetail from './pages/LeadDetail.jsx';
 import Outreach from './pages/Outreach.jsx';
@@ -14,7 +15,7 @@ import Settings from './pages/Settings.jsx';
 const NAV = [
   ['Workspace', [['/', 'Command centre'], ['/recommendations', 'Recommendations', 'recommendations']]],
   ['Performance', [['/email', 'Outbound email'], ['/social', 'Social'], ['/website', 'Website (GA4)'], ['/search', 'Search Console'], ['/paid', 'Paid: Google & ChatGPT']]],
-  ['Growth', [['/radar', 'Market radar', 'opportunities'], ['/leads', 'Leads', 'due'], ['/outreach', 'Outreach', 'drafts']]],
+  ['Growth', [['/visitors', 'Company visitors'], ['/radar', 'Market radar', 'opportunities'], ['/leads', 'Leads', 'due'], ['/outreach', 'Outreach', 'drafts']]],
   ['Setup', [['/integrations', 'Integrations'], ['/settings', 'Settings']]],
 ];
 
@@ -70,6 +71,7 @@ export default function App() {
           <Route path="/website" element={<WebsitePage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/paid" element={<PaidPage />} />
+          <Route path="/visitors" element={<Visitors />} />
           <Route path="/radar" element={<Radar />} />
           <Route path="/leads" element={<Leads />} />
           <Route path="/leads/:id" element={<LeadDetail />} />

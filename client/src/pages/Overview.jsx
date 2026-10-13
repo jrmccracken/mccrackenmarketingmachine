@@ -7,6 +7,7 @@ import { Sparkline } from '../components/Chart.jsx';
 // The one KPI per channel the command centre leads with.
 const TILES = [
   ['forms', 'enquiries', '/leads?q=inbound', null],
+  ['visitors', 'visitors', '/visitors', null],
   ['email', 'replies', '/email', 'reply_rate'],
   ['linkedin', 'impressions', '/social', 'engagement_rate'],
   ['ga4', 'sessions', '/website', 'conversions'],
@@ -73,7 +74,7 @@ export default function Overview({ status }) {
             <span className="stat-value num">{KPI[k].f(S[s].current[k])}</span>
             <Delta value={S[s].change[k]} up={KPI[k].up} />
             {sub ? <span className="muted" style={{ fontSize: 12 }}>{KPI[sub].label}: {KPI[sub].f(S[s].current[sub])}</span>
-              : <span className="muted" style={{ fontSize: 12 }}>From your website forms</span>}
+              : <span className="muted" style={{ fontSize: 12 }}>{s === 'forms' ? 'From your website forms' : 'Tracked visitors (with consent)'}</span>}
             <Sparkline values={data.sparks[s]} />
           </Link>
         ))}

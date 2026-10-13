@@ -14,6 +14,7 @@ import { smtpConfigured } from '../services/mailer.js';
 import { jobState } from '../services/scheduler.js';
 import { parseCsv, withIsoDates, toNumber, socialMetrics } from '../csv.js';
 import { importPipeline, pipelineStatus } from '../services/pipeline.js';
+import { visitorInsights } from '../services/visitors.js';
 import { clearDemo, seedDemoMetrics, seedDemoLeads, seedDemoOpportunities, seedWorkspace } from '../demo.js';
 
 export const api = express.Router();
@@ -26,6 +27,7 @@ const window = (req) => {
 // Which metrics each source charts, in order of importance.
 const SOURCE_METRICS = {
   forms: ['enquiries'],
+  visitors: ['pageviews', 'visitors'],
   email: ['prospects', 'sent', 'opens', 'replies', 'clicks', 'bounces', 'opportunities'],
   linkedin: ['impressions', 'engagements', 'clicks', 'followers_gained'],
   facebook: ['impressions', 'engagements', 'clicks', 'followers_gained'],
@@ -35,7 +37,7 @@ const SOURCE_METRICS = {
   google_ads: ['cost', 'impressions', 'clicks', 'conversions', 'conv_value'],
   openai_ads: ['cost', 'impressions', 'clicks', 'conversions', 'conv_value'],
 };
-const HEADLINE = { forms: 'enquiries', email: 'replies', linkedin: 'impressions', facebook: 'impressions', instagram: 'impressions', ga4: 'sessions', gsc: 'clicks', google_ads: 'conversions', openai_ads: 'conversions' };
+const HEADLINE = { forms: 'enquiries', visitors: 'visitors', email: 'replies', linkedin: 'impressions', facebook: 'impressions', instagram: 'impressions', ga4: 'sessions', gsc: 'clicks', google_ads: 'conversions', openai_ads: 'conversions' };
 
 // ---------------------------------------------------------------- status & overview
 api.get('/status', (req, res) => {
@@ -314,6 +316,24 @@ api.post('/integrations/sync-all', wrap(async (req, res) => {
   refreshRecommendations();
   res.json(r);
 }));
+
+// Company visitors (Website Visitor Log sheet)
+api.get('/visitors', (req, res) => res.json(visitorInsights(Math.min(365, Math.max(1, Number(req.query.days) || 90)))));
+api.post('/visitors/lead', (req, res) => {
+  const { name, city, pages, contact } = req.body || {};
+  if (!name) return res.status(400).json({ error: 'Organisation name required' });
+  const existing = db.prepare('SELECT id FROM leads WHERE lower(company) = lower(?)').get(name);
+  if (existing) return res.json({ id: existing.id, existing: true });
+  try {
+    const id = createLead({
+      company: name, first_name: contact?.name?.split(' ')[0] || null, last_name: contact?.name?.split(' ').slice(1).join(' ') || null,
+      email: contact?.email || null, phone: contact?.phone || null, source: 'Website visitor', tags: ['visitor', city].filter(Boolean).join(', '),
+      notes: `Visited the website. Pages read:\n${(pages || []).map((p) => `- ${p.path} (${p.views}x)`).join('\n')}`,
+      next_follow_up_at: now(),
+    });
+    res.json({ id });
+  } catch (err) { res.status(400).json({ error: err.message }); }
+});
 
 // Lead pipeline (Claude artifact) sync: paste or upload its "Export for dashboard" JSON.
 api.get('/pipeline', (req, res) => res.json(pipelineStatus()));

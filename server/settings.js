@@ -14,6 +14,7 @@ export const DEFAULTS = {
   'monitor.outbound_keywords': 'raises seed, series A funding, appoints marketing director, hiring head of marketing, rebrand, launches new product, expands into UK',
   'monitor.icp_terms': 'SaaS, B2B, software, manufacturing, professional services, fintech',
   'monitor.region': 'GB',
+  'visitors.sheet_id': '1sVqnrRqbtd0M8IcuYYOlF87zXYC_bPaNSDgpxi6doto',
   'outreach.auto_send': 'false',
   'outreach.daily_limit': '40',
 };

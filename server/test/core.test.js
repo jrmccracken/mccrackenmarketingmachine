@@ -187,3 +187,24 @@ test('social exports: LinkedIn column names and US dates are understood', async 
   // A day over 12 in first position settles the order whatever the default.
   assert.equal(withIsoDates([{ date: '13/10/2026' }, { date: '01/10/2026' }], { defaultOrder: 'mdy' })[1].date, '2026-10-01');
 });
+
+test('visitor log: organisations are scored by intent, ISPs are set aside, and form fills identify people', async () => {
+  const { rowsToEvents, visitorInsights } = await import('../services/visitors.js');
+  const { replaceEvents } = await import('../connectors/visitors.js');
+  const iso = (minsAgo) => "'" + new Date(Date.now() - minsAgo * 60000).toISOString();
+  const H = ['time', 'visitor_id', 'type', 'path', 'title', 'referrer', 'utm', 'seconds', 'organisation', 'city', 'region', 'country', 'email', 'name', 'phone', 'company', 'form'];
+  const row = (m, vid, type, path, org, extra = {}) => H.map((h) => ({ time: iso(m), visitor_id: vid, type, path, organisation: org, city: 'Bolton', country: 'GB', ...extra })[h] ?? '');
+  replaceEvents(rowsToEvents([H,
+    row(60, 'v-aaaaaaaa1', 'view', '/services/fractional-cmo', 'AS64500 Pennine Training Group'),
+    row(59, 'v-aaaaaaaa1', 'dwell', '/services/fractional-cmo', '', { seconds: '120' }),
+    row(58, 'v-aaaaaaaa1', 'view', '/contact', 'AS64500 Pennine Training Group'),
+    row(57, 'v-aaaaaaaa1', 'identify', '/contact', '', { email: 'Kim@Pennine.example', name: 'Kim Lee', form: 'contact on /contact' }),
+    row(30, 'v-bbbbbbbb2', 'view', '/', 'AS2856 British Telecommunications PLC'),
+  ]));
+  const out = visitorInsights(30);
+  assert.equal(out.orgs.length, 1);
+  assert.equal(out.orgs[0].name, 'Pennine Training Group');
+  assert.equal(out.orgs[0].band, 'High'); // contact page + services + form fill
+  assert.equal(out.people[0].email, 'kim@pennine.example');
+  assert.equal(out.unresolved, 1); // the BT home broadband visitor
+});

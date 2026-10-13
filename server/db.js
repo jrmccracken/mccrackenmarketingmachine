@@ -218,3 +218,10 @@ for (const [col, type] of [
   ['replied_at', 'TEXT'], ['meeting_at', 'TEXT'],
 ]) if (!leadCols.has(col)) db.exec(`ALTER TABLE leads ADD COLUMN ${col} ${type}`);
 db.exec('CREATE UNIQUE INDEX IF NOT EXISTS leads_external ON leads(external_id) WHERE external_id IS NOT NULL');
+
+// Website visitor log (from the "Website Visitor Log" Google Sheet fed by the site's tracking snippet).
+db.exec(`CREATE TABLE IF NOT EXISTS visitor_events (
+  t INTEGER NOT NULL, vid TEXT NOT NULL, type TEXT NOT NULL, path TEXT, title TEXT, ref TEXT, secs REAL,
+  org TEXT, city TEXT, country TEXT, email TEXT, name TEXT, phone TEXT, company TEXT, form TEXT
+);
+CREATE INDEX IF NOT EXISTS visitor_events_t ON visitor_events(t);`);
