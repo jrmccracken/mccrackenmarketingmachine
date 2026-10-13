@@ -12,6 +12,8 @@ Every channel shows **demo data** until it's connected, so you can explore strai
 
 ## Run it
 
+**On Windows:** double-click **`Start Marketing Machine.bat`** in the app folder. It installs what it needs the first time, starts the app and opens the dashboard. Keep its window open while you use the app.
+
 Requires Node 22.13+ (uses the built-in `node:sqlite`, so there are no native modules).
 
 ```bash
