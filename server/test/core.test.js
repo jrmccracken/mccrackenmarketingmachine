@@ -171,3 +171,10 @@ test('Netlify form submissions become inbound leads once, and enquiry counts bec
     delete process.env.NETLIFY_TOKEN;
   }
 });
+
+test('saving a card with a blank secret box keeps the saved secret', async () => {
+  const { setSettings, getSetting } = await import('../settings.js');
+  setSettings({ 'google.service_account_json': '{"client_email":"a@b"}' });
+  setSettings({ 'gsc.site_url': 'sc-domain:example.com', 'google.service_account_json': '' });
+  assert.equal(getSetting('google.service_account_json'), '{"client_email":"a@b"}');
+});

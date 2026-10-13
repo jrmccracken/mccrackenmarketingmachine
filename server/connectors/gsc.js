@@ -2,6 +2,14 @@ import { getSetting } from '../settings.js';
 import { serviceAccountToken, getJson } from './google-auth.js';
 
 // Search Console API: https://developers.google.com/webmaster-tools/v1/searchanalytics/query
+// Search Console wants either "sc-domain:example.com" or a full URL-prefix property ending in "/".
+export function siteUrl(input) {
+  const v = String(input || '').trim();
+  if (/^sc-domain:/i.test(v)) return v;
+  if (/^https?:\/\//i.test(v)) return v.endsWith('/') ? v : `${v}/`;
+  return `sc-domain:${v.replace(/^www\./i, '').replace(/\/.*$/, '')}`;
+}
+
 export default {
   id: 'gsc',
   name: 'Google Search Console',
@@ -15,7 +23,7 @@ export default {
 
   async sync({ from, to }) {
     const token = await serviceAccountToken('https://www.googleapis.com/auth/webmasters.readonly');
-    const url = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(getSetting('gsc.site_url'))}/searchAnalytics/query`;
+    const url = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(siteUrl(getSetting('gsc.site_url')))}/searchAnalytics/query`;
     const query = (dimensions, rowLimit = 25000) => getJson(url, {
       method: 'POST',
       headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },

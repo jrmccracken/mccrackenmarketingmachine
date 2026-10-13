@@ -45,7 +45,8 @@ export function setSettings(obj) {
   const upsert = db.prepare('INSERT INTO settings(key, value) VALUES(?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value');
   for (const [key, value] of Object.entries(obj)) {
     // A masked secret coming back from the UI means "unchanged".
-    if (SECRET_KEYS.has(key) && typeof value === 'string' && value.startsWith('••••')) continue;
+    // and a blank secret means "not entered here" (several cards share one key), so neither overwrites a saved secret.
+    if (SECRET_KEYS.has(key) && typeof value === 'string' && (value.startsWith('••••') || value.trim() === '')) continue;
     upsert.run(key, value == null ? '' : String(value));
   }
 }
