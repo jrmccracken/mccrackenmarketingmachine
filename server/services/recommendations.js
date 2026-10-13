@@ -170,6 +170,14 @@ export function ruleRecommendations() {
     detail: 'Leads in replied/meeting/proposal stages go cold quickly.',
     action: 'Send a short, useful nudge: a relevant case study, a benchmark or a specific idea for their business.',
     impact: 'Revives stalled deals' });
+  // Website enquiries (Netlify Forms) that nobody has answered yet.
+  const unanswered = db.prepare(`SELECT COUNT(*) n, MIN(created_at) oldest FROM leads
+    WHERE external_id LIKE 'netlify:%' AND stage = 'new' AND last_contacted_at IS NULL`).get();
+  if (unanswered.n) add({ fp: `forms:unanswered:${unanswered.n}`, source: 'leads', priority: 'high',
+    title: `${unanswered.n} website enquir${unanswered.n > 1 ? 'ies are' : 'y is'} waiting for a reply`,
+    detail: `The oldest came in ${Math.max(0, Math.round((Date.now() - Date.parse(unanswered.oldest)) / 864e5))} day(s) ago. Inbound leads go cold within hours, not days.`,
+    action: 'Open Leads, search "inbound", and reply to each one today. Log the reply on the lead so it drops off this list.',
+    impact: 'Your warmest leads, converted' });
   // Lead pipeline: Gmail drafts written by the Monday research run that haven't gone out yet.
   const waiting = db.prepare(`SELECT COUNT(*) n, SUM(fit = 'A') a FROM leads WHERE pipeline_status = 'Drafted' AND created_at < ?`)
     .get(new Date(Date.now() - 2 * 864e5).toISOString());

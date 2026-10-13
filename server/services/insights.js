@@ -10,6 +10,8 @@ export function derive(source, t) {
       return { ...t, ...(v('sent') ? { open_rate: ratio(v('opens'), v('sent')), reply_rate: ratio(v('replies'), v('sent')),
         bounce_rate: ratio(v('bounces'), v('sent')), click_rate: ratio(v('clicks'), v('sent')) }
         : { open_rate: null, reply_rate: null, bounce_rate: null, click_rate: null }) };
+    case 'forms':
+      return { ...t };
     case 'ga4':
       return { ...t, engagement_rate: ratio(v('engaged_sessions'), v('sessions')), conversion_rate: ratio(v('conversions'), v('sessions')) };
     case 'gsc':
@@ -42,7 +44,7 @@ export function snapshot(days = 28) {
 }
 
 export function campaigns(source, from, to) {
-  return breakdown(source, 'campaign', from, to, { orderBy: source === 'email' ? 'sent' : 'cost', limit: 100 })
+  return breakdown(source, 'campaign', from, to, { orderBy: { email: 'sent', forms: 'enquiries' }[source] || 'cost', limit: 100 })
     .map((c) => ({ ...derive(source, c), name: c.name }));
 }
 

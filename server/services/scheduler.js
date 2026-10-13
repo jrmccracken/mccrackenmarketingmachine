@@ -1,4 +1,4 @@
-import { syncAll } from './sync.js';
+import { syncAll, syncConnector } from './sync.js';
 import { refreshRecommendations } from './recommendations.js';
 import { runMonitor } from './monitor.js';
 import { runSequences, flushOutbox } from './outreach.js';
@@ -7,6 +7,8 @@ const HOUR = 3_600_000;
 const jobs = [
   { name: 'sync', every: 6 * HOUR, run: async () => { await syncAll({ days: 30 }); refreshRecommendations(); } },
   { name: 'monitor', every: 2 * HOUR, run: runMonitor },
+  // Website enquiries are checked every 15 minutes so new inbound leads show up quickly.
+  { name: 'enquiries', every: 0.25 * HOUR, run: async () => { await syncConnector('netlify', { days: 30 }); refreshRecommendations(); } },
   { name: 'outreach', every: 0.25 * HOUR, run: async () => { runSequences(); await flushOutbox(); } },
   { name: 'recommendations', every: 1 * HOUR, run: refreshRecommendations },
 ];

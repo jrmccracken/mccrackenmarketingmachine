@@ -133,3 +133,41 @@ test('Lead pipeline import creates leads once, follows stage changes and builds 
   importPipeline([lead('Sent', { sentOn: daysAgo(3) })]);
   assert.equal(db.prepare('SELECT stage FROM leads WHERE id = ?').get(row.id).stage, 'meeting');
 });
+
+test('Netlify form submissions become inbound leads once, and enquiry counts become metrics', async () => {
+  const http = await import('node:http');
+  const today = new Date().toISOString();
+  const subs = [
+    { id: 's1', form_id: 'f1', created_at: today, email: 'Kate@Widgets.example', name: 'Kate Moss',
+      data: { name: 'Kate Moss', email: 'Kate@Widgets.example', 'Company name': 'Widgets Ltd', Message: 'Can we book a call?', ip: '1.2.3.4' } },
+    { id: 's2', form_id: 'f1', created_at: today, data: { 'first-name': 'Ana', email: 'ana@x.example', message: 'Following up on your email' } },
+  ];
+  const server = http.createServer((req, res) => {
+    res.setHeader('content-type', 'application/json');
+    if (req.headers.authorization !== 'Bearer test-token') { res.statusCode = 401; return res.end('{"message":"Access denied"}'); }
+    if (req.url.endsWith('/forms')) return res.end(JSON.stringify([{ id: 'f1', name: 'contact' }]));
+    if (req.url.includes('/submissions')) return res.end(JSON.stringify(req.url.includes('page=1') ? subs : []));
+    res.statusCode = 404; res.end('{}');
+  });
+  await new Promise((r) => server.listen(0, r));
+  process.env.NETLIFY_API_URL = `http://localhost:${server.address().port}`;
+  process.env.NETLIFY_TOKEN = 'test-token';
+  const { syncConnector } = await import('../services/sync.js');
+  try {
+    // ana@x.example is already a lead (from the sequence test), so her enquiry marks her as replied instead.
+    const first = await syncConnector('netlify', { days: 30 });
+    assert.equal(first.status, 'ok');
+    await syncConnector('netlify', { days: 30 }); // second run must not duplicate
+    const kate = db.prepare(`SELECT * FROM leads WHERE email = 'kate@widgets.example'`).all();
+    assert.equal(kate.length, 1);
+    assert.equal(kate[0].company, 'Widgets Ltd');
+    assert.equal(kate[0].source, 'Website: contact');
+    assert.match(kate[0].notes, /book a call/);
+    assert.equal(db.prepare(`SELECT stage FROM leads WHERE email = 'ana@x.example'`).get().stage, 'replied');
+    const rows = db.prepare(`SELECT SUM(value) v FROM metrics WHERE source = 'forms' AND dim_type = ''`).get();
+    assert.equal(rows.v, 2);
+  } finally {
+    server.close();
+    delete process.env.NETLIFY_TOKEN;
+  }
+});

@@ -38,6 +38,7 @@ Open **Integrations**, click **Connect** on a channel, paste credentials, then *
 
 | Channel | What you need |
 |---|---|
+| Website enquiries | **Netlify Forms**: a Netlify personal access token (User settings → Applications → Personal access tokens) and your site's domain or Site ID. Every form submission becomes an inbound lead, checked every 15 minutes, and anyone already in your pipeline is marked as replied. |
 | Outbound email | **Lead pipeline** (the Claude artifact your Monday lead engine fills): click *Export for dashboard* on the pipeline, then *Paste from pipeline* on the Integrations page. Leads, fit grades, Gmail drafts and stages come across; sent, reply and meeting dates feed the Outbound email page. Or connect Instantly with an API v2 key. |
 | GA4 + Search Console | A Google Cloud service account with the *Google Analytics Data API* and *Search Console API* enabled. Add its email as a **Viewer** on the GA4 property and as a **user** on the Search Console property. Paste the JSON key once; both connectors share it. |
 | Google Ads | Developer token, OAuth client ID/secret and a refresh token for a user with access to the account (generate with Google's OAuth playground or `google-ads` auth helpers). Add the MCC ID if you access the account through a manager. |

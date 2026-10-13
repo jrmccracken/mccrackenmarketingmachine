@@ -5,12 +5,14 @@ import googleAds from './google-ads.js';
 import openaiAds from './openai-ads.js';
 import linkedin from './linkedin.js';
 import meta from './meta.js';
+import netlify from './netlify.js';
 
-export const connectors = [email, linkedin, meta, ga4, gsc, googleAds, openaiAds];
+export const connectors = [netlify, email, linkedin, meta, ga4, gsc, googleAds, openaiAds];
 export const connectorById = Object.fromEntries(connectors.map((c) => [c.id, c]));
 
 // Metric sources (what ends up in metrics.source) each connector writes.
 export const SOURCES = {
+  forms: { label: 'Website enquiries', connector: 'netlify' },
   email: { label: 'Outbound email', connector: 'email' },
   linkedin: { label: 'LinkedIn', connector: 'linkedin' },
   facebook: { label: 'Facebook', connector: 'meta' },

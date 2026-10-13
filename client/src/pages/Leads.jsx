@@ -11,7 +11,7 @@ export default function Leads() {
   const due = params.get('due') ? 1 : '';
   const [view, setView] = useState('table');
   const [stage, setStage] = useState('');
-  const [q, setQ] = useState('');
+  const [q, setQ] = useState(params.get('q') || '');
   const [selected, setSelected] = useState(new Set());
   const [modal, setModal] = useState(null);
   const { data, error, loading, reload } = useFetch(`/leads?stage=${stage}&q=${encodeURIComponent(q)}&due=${due}`);

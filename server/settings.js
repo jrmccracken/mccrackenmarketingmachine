@@ -20,6 +20,7 @@ export const DEFAULTS = {
 
 export const SECRET_KEYS = new Set([
   'instantly.api_key',
+  'netlify.token',
   'google.service_account_json',
   'google_ads.developer_token', 'google_ads.client_secret', 'google_ads.refresh_token',
   'openai_ads.api_key',

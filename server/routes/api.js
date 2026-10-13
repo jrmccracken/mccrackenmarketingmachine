@@ -25,6 +25,7 @@ const window = (req) => {
 
 // Which metrics each source charts, in order of importance.
 const SOURCE_METRICS = {
+  forms: ['enquiries'],
   email: ['prospects', 'sent', 'opens', 'replies', 'clicks', 'bounces', 'opportunities'],
   linkedin: ['impressions', 'engagements', 'clicks', 'followers_gained'],
   facebook: ['impressions', 'engagements', 'clicks', 'followers_gained'],
@@ -34,7 +35,7 @@ const SOURCE_METRICS = {
   google_ads: ['cost', 'impressions', 'clicks', 'conversions', 'conv_value'],
   openai_ads: ['cost', 'impressions', 'clicks', 'conversions', 'conv_value'],
 };
-const HEADLINE = { email: 'replies', linkedin: 'impressions', facebook: 'impressions', instagram: 'impressions', ga4: 'sessions', gsc: 'clicks', google_ads: 'conversions', openai_ads: 'conversions' };
+const HEADLINE = { forms: 'enquiries', email: 'replies', linkedin: 'impressions', facebook: 'impressions', instagram: 'impressions', ga4: 'sessions', gsc: 'clicks', google_ads: 'conversions', openai_ads: 'conversions' };
 
 // ---------------------------------------------------------------- status & overview
 api.get('/status', (req, res) => {
@@ -76,7 +77,7 @@ api.get('/channel/:source', (req, res) => {
   const snap = snapshot(days).sources[source] || null;
   const out = { source, label: SOURCES[source].label, info: sourceInfo(source), snapshot: snap,
     series: series(source, SOURCE_METRICS[source], from, to), window: { from, to, days } };
-  if (source === 'email' || source === 'google_ads' || source === 'openai_ads') out.campaigns = campaigns(source, from, to);
+  if (['email', 'google_ads', 'openai_ads', 'forms'].includes(source)) out.campaigns = campaigns(source, from, to);
   if (source === 'email') out.pipeline = pipelineStatus();
   if (source === 'ga4') {
     out.channels = breakdown('ga4', 'channel', from, to, { orderBy: 'sessions' }).map((c) => ({ ...derive('ga4', c), name: c.name }));

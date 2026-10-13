@@ -106,8 +106,10 @@ export function SocialPage() {
 export function WebsitePage() {
   const [days, setDays] = useRange();
   const { data, error, loading } = useChannel('ga4', days);
+  const forms = useChannel('forms', days);
   if (error) return <ErrorBox error={error} />;
   if (loading && !data) return <Loading />;
+  const enquiries = forms.data?.snapshot;
   return (
     <div className="stack">
       <Head title="Website" sub="Google Analytics 4" days={days} setDays={setDays} demo={data.info.demo} />
@@ -126,6 +128,17 @@ export function WebsitePage() {
               { key: 'name', label: 'Channel' }, col('sessions'), col('engagement_rate'), col('conversions'), col('conversion_rate')]} />
           </Card>
         </div>
+        {enquiries && (
+          <div className="grid cols-2">
+            <Card title="Website enquiries per day" sub={`${fmt.n(enquiries.current.enquiries)} in the last ${days} days · from your Netlify forms`}
+              actions={<Link className="btn sm" to="/leads?q=inbound">See the leads</Link>}>
+              <LineChart data={forms.data.series} series={[{ key: 'enquiries', label: 'Enquiries' }]} />
+            </Card>
+            <Card title="Enquiries by form">
+              <BarList rows={forms.data.campaigns || []} value={(r) => r.enquiries || 0} />
+            </Card>
+          </div>
+        )}
         {data.pages?.length > 0 && (
           <Card title="Top landing pages">
             <DataTable rows={data.pages} initialSort={{ key: 'sessions', dir: 'desc' }} cols={[
