@@ -1,0 +1,20 @@
+# One-click hosting on Render (https://render.com/deploy?repo=https://github.com/jrmccracken/mccrackenmarketingmachine).
+# Every push to this branch redeploys automatically. The database lives on the persistent disk, so updates keep data.
+services:
+  - type: web
+    name: mccracken-marketing-machine
+    runtime: docker
+    plan: starter
+    region: frankfurt
+    branch: claude/mccracken-marketing-dashboard-jtitw7
+    autoDeploy: true
+    healthCheckPath: /healthz
+    disk:
+      name: data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: MMM_DB_PATH
+        value: /data/mmm.db
+      - key: MMM_PASSWORD
+        sync: false

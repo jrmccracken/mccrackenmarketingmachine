@@ -10,7 +10,16 @@ The internal marketing workspace for McCracken Marketing. One place to:
 
 Every channel shows **demo data** until it's connected, so you can explore straight away. Live data replaces demo data per channel on the first successful sync.
 
-## Run it
+## Use it online (recommended)
+
+Host it once on Render and use one web address from any laptop or phone. It runs 24/7, so syncs and the market radar keep working when your laptop is off, and every update pushed to this branch deploys itself. Data lives on Render's persistent disk, so updates never lose connections.
+
+1. Click: https://render.com/deploy?repo=https://github.com/jrmccracken/mccrackenmarketingmachine
+2. Sign in with GitHub, choose a password when asked for `MMM_PASSWORD`, and click **Apply**. (Starter plan plus a 1 GB disk, about $7.25 a month.)
+3. Open the `….onrender.com` address it gives you and log in with any username and that password.
+4. Bring your connections across: on your laptop copy go to **Settings → Download backup**, then on the online copy **Settings → Restore from backup**. Delete the backup file afterwards; it contains your keys.
+
+## Run it on your own computer
 
 **On Windows:** double-click **`Start Marketing Machine.bat`** in the app folder. It installs what it needs the first time, starts the app and opens the dashboard. Keep its window open while you use the app.
 

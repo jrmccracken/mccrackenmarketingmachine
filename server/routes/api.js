@@ -370,6 +370,39 @@ api.post('/import/metrics', (req, res) => {
   res.json({ rows: n, from: dates[0], to: dates.at(-1), columns: metricsIn });
 });
 
+// Backup and restore: moves connections, leads and history between copies (e.g. laptop -> hosted).
+// The file contains your API keys, so it's handed straight to you and never stored anywhere else.
+const BACKUP_TABLES = ['settings', 'leads', 'activities', 'templates', 'sequences', 'enrollments', 'outbox', 'feeds', 'opportunities', 'recommendations', 'briefs', 'metrics'];
+api.get('/backup', (req, res) => {
+  const data = Object.fromEntries(BACKUP_TABLES.map((t) => [t, t === 'metrics'
+    ? db.prepare('SELECT * FROM metrics WHERE demo = 0').all()
+    : db.prepare(`SELECT * FROM ${t}`).all()]));
+  res.set('Content-Disposition', `attachment; filename="marketing-machine-backup-${new Date().toISOString().slice(0, 10)}.json"`);
+  res.json({ app: 'marketing-machine', version: 1, exportedAt: now(), data });
+});
+api.post('/restore', (req, res) => {
+  const backup = req.body;
+  if (backup?.app !== 'marketing-machine' || !backup.data) return res.status(400).json({ error: 'That isn\'t a Marketing Machine backup file.' });
+  const counts = {};
+  db.exec('PRAGMA foreign_keys = OFF'); // must be set outside the transaction
+  try { tx(() => {
+    for (const t of BACKUP_TABLES) {
+      const rows = backup.data[t];
+      if (!Array.isArray(rows)) continue;
+      const cols = new Set(db.prepare(`PRAGMA table_info(${t})`).all().map((c) => c.name));
+      db.exec(t === 'metrics' ? 'DELETE FROM metrics' : `DELETE FROM ${t}`);
+      for (const r of rows) {
+        const keys = Object.keys(r).filter((k) => cols.has(k));
+        if (!keys.length) continue;
+        db.prepare(`INSERT OR REPLACE INTO ${t}(${keys.join(',')}) VALUES (${keys.map(() => '?').join(',')})`).run(...keys.map((k) => r[k]));
+      }
+      counts[t] = rows.length;
+    }
+  }); } finally { db.exec('PRAGMA foreign_keys = ON'); }
+  refreshRecommendations();
+  res.json({ restored: counts });
+});
+
 api.get('/settings', (req, res) => res.json(allSettings()));
 api.put('/settings', (req, res) => { setSettings(req.body || {}); res.json(allSettings()); });
 

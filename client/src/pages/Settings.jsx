@@ -50,6 +50,30 @@ export default function Settings() {
         </Card>
       ))}
       <div><button className="btn primary" disabled={!!busy} onClick={save}>Save settings</button></div>
+      <BackupCard />
     </div>
+  );
+}
+
+function BackupCard() {
+  const [busy, run] = useAction();
+  const restore = (file) => run('restore', async () => {
+    const r = await api.post('/restore', JSON.parse(await file.text()));
+    setTimeout(() => location.reload(), 1200);
+    return r;
+  }, (r) => `Restored ${r.restored.leads ?? 0} leads and your connections. Reloading…`);
+  return (
+    <Card title="Backup and move" sub="Copy your connections, leads and history to another copy of the Marketing Machine (for example from your laptop to the online version).">
+      <div className="stack" style={{ gap: 10 }}>
+        <div className="row">
+          <a className="btn" href="/api/backup">Download backup</a>
+          <label className="btn" style={{ cursor: 'pointer' }}>
+            {busy ? 'Restoring…' : 'Restore from backup'}
+            <input type="file" accept=".json,application/json" hidden onChange={(e) => e.target.files[0] && restore(e.target.files[0])} />
+          </label>
+        </div>
+        <p className="muted" style={{ margin: 0, fontSize: 12.5 }}>The backup file contains your API keys and passwords. Restore it, then delete it. Restoring replaces everything in this copy.</p>
+      </div>
+    </Card>
   );
 }
