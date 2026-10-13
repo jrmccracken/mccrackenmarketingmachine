@@ -10,6 +10,10 @@ if not exist node_modules (
   echo  First run: installing, this takes about a minute...
   call npm.cmd install || (echo Install failed. Send a screenshot of this window. & pause & exit /b 1)
 )
+rem Stop any older copy of the app still running (from another folder), so this one gets the usual addresses.
+echo  Closing any older copy of the app that is still running...
+powershell -NoProfile -Command "Get-NetTCPConnection -LocalPort 3001,5173 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }"
+timeout /t 2 >nul
 rem Open the dashboard in the browser once it has had a few seconds to start.
 start "" cmd /c "timeout /t 8 >nul & start http://localhost:5173"
 call npm.cmd run dev
