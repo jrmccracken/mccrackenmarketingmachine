@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { api } from '../lib/api.js';
+import { fileToCsv } from '../lib/sheet.js';
 import { fmt } from '../lib/format.js';
 import { Card, PageHead, useFetch, useAction, Loading } from '../components/ui.jsx';
 
 const IMPORT_SOURCES = [['openai_ads', 'ChatGPT Ads'], ['google_ads', 'Google Ads'], ['linkedin', 'LinkedIn'], ['facebook', 'Facebook'], ['instagram', 'Instagram'], ['email', 'Outbound email'], ['ga4', 'Website (GA4)'], ['gsc', 'Search Console']];
 const IMPORT_COLS = {
   openai_ads: 'ChatGPT Ads Manager → Reporting → Export CSV (daily breakdown). Needs Day/Date, Campaign, Spend, Impressions, Clicks, Conversions; £ signs and UK dates are fine', google_ads: 'date, campaign, spend, impressions, clicks, conversions, conversion_value',
-  linkedin: 'date, impressions, engagements, clicks, followers_gained', facebook: 'date, impressions, engagements, clicks, followers_gained', instagram: 'date, impressions, engagements, clicks, followers_gained',
+  linkedin: 'LinkedIn page → Analytics → Content (and Followers) → Export. Upload the Excel file as it is; do Content and Followers as two uploads', facebook: 'Meta Business Suite → Insights → Export (daily). Excel or CSV both work', instagram: 'Meta Business Suite → Insights → Export (daily). Excel or CSV both work',
   email: 'date, sent, opens, replies, clicks, bounces, opportunities', ga4: 'date, sessions, users, new_users, engaged_sessions, conversions', gsc: 'date, clicks, impressions, position_weighted',
 };
 
@@ -112,10 +113,16 @@ function ImportCard({ onDone }) {
           <select className="input" style={{ width: 220 }} value={source} onChange={(e) => setSource(e.target.value)}>
             {IMPORT_SOURCES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </select>
-          <input type="file" accept=".csv,text/csv" onChange={(e) => e.target.files[0]?.text().then(setCsv)} />
+          <input type="file" accept=".csv,.xls,.xlsx,text/csv" onChange={(e) => {
+            const f = e.target.files[0];
+            if (!f) return;
+            if (/linkedin/i.test(f.name)) setSource('linkedin');
+            run('read', () => fileToCsv(f).then(setCsv), `Loaded ${f.name}. Check the channel, then click Import.`);
+          }} />
         </div>
         <p className="muted" style={{ margin: 0, fontSize: 12 }}>Expected columns: <code>{IMPORT_COLS[source]}</code></p>
         <textarea className="input" rows={5} placeholder="…or paste CSV" value={csv} onChange={(e) => setCsv(e.target.value)} />
+        <p className="muted" style={{ margin: 0, fontSize: 12 }}>Excel (.xlsx / .xls) and CSV files both work.</p>
         <div><button className="btn primary" disabled={!csv || busy} onClick={() => run('i', () => api.post('/import/metrics', { source, csv }).then((r) => { setCsv(''); onDone(); return r; }), (r) => `Imported ${r.rows} values (${r.from} to ${r.to})`)}>Import</button></div>
       </div>
     </Card>

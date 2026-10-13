@@ -178,3 +178,12 @@ test('saving a card with a blank secret box keeps the saved secret', async () =>
   setSettings({ 'gsc.site_url': 'sc-domain:example.com', 'google.service_account_json': '' });
   assert.equal(getSetting('google.service_account_json'), '{"client_email":"a@b"}');
 });
+
+test('social exports: LinkedIn column names and US dates are understood', async () => {
+  const { withIsoDates, socialMetrics } = await import('../csv.js');
+  const rows = withIsoDates(parseCsv('Date,Impressions (total),Clicks (total),Reactions (total),Comments (total),Reposts (total)\n9/30/2026,250,5,10,1,0\n10/2/2026,100,2,3,0,0\n'), { defaultOrder: 'mdy' });
+  assert.deepEqual(rows.map((r) => r.date), ['2026-09-30', '2026-10-02']);
+  assert.deepEqual(socialMetrics(rows[0]), { impressions: 250, clicks: 5, engagements: 16 });
+  // A day over 12 in first position settles the order whatever the default.
+  assert.equal(withIsoDates([{ date: '13/10/2026' }, { date: '01/10/2026' }], { defaultOrder: 'mdy' })[1].date, '2026-10-01');
+});

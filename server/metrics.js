@@ -14,8 +14,11 @@ export function dateRange(from, to) {
 }
 
 /** Replace a source's rows inside [from, to] with fresh ones. Live data also clears any demo rows for the source. */
-export function writeMetrics(source, rows, { from, to, demo = false }) {
-  const del = db.prepare('DELETE FROM metrics WHERE source = ? AND date BETWEEN ? AND ?');
+export function writeMetrics(source, rows, { from, to, demo = false, onlyMetrics = null }) {
+  // onlyMetrics: replace just these metrics (e.g. a followers export must not wipe impressions from a content export).
+  const del = onlyMetrics
+    ? db.prepare(`DELETE FROM metrics WHERE source = ? AND date BETWEEN ? AND ? AND metric IN (${onlyMetrics.map(() => '?').join(',')})`)
+    : db.prepare('DELETE FROM metrics WHERE source = ? AND date BETWEEN ? AND ?');
   const ins = db.prepare(`INSERT INTO metrics(source, metric, date, dim_type, dim, value, demo) VALUES (?,?,?,?,?,?,?)
     ON CONFLICT(source, metric, date, dim_type, dim) DO UPDATE SET value = excluded.value, demo = excluded.demo`);
   tx(() => {
@@ -23,7 +26,7 @@ export function writeMetrics(source, rows, { from, to, demo = false }) {
     sources.add(source);
     for (const s of sources) {
       if (!demo) db.prepare('DELETE FROM metrics WHERE source = ? AND demo = 1').run(s);
-      if (from && to) del.run(s, from, to);
+      if (from && to) del.run(s, from, to, ...(onlyMetrics || []));
     }
     for (const r of rows) {
       if (!Number.isFinite(r.value)) continue;

@@ -12,7 +12,7 @@ import { STAGES, scoreLead, logActivity, queueEmail, flushOutbox, runSequences, 
 import { aiEnabled, MODEL } from '../services/ai.js';
 import { smtpConfigured } from '../services/mailer.js';
 import { jobState } from '../services/scheduler.js';
-import { parseCsv, withIsoDates, toNumber } from '../csv.js';
+import { parseCsv, withIsoDates, toNumber, socialMetrics } from '../csv.js';
 import { importPipeline, pipelineStatus } from '../services/pipeline.js';
 import { clearDemo, seedDemoMetrics, seedDemoLeads, seedDemoOpportunities, seedWorkspace } from '../demo.js';
 
@@ -331,18 +331,23 @@ api.post('/pipeline/import', (req, res) => {
 api.post('/import/metrics', (req, res) => {
   const { source, csv } = req.body;
   if (!SOURCES[source]) return res.status(400).json({ error: 'Unknown source' });
-  const list = withIsoDates(parseCsv(String(csv || '')));
+  const social = ['linkedin', 'facebook', 'instagram'].includes(source);
+  // LinkedIn exports write dates US-style (10/13/2026).
+  const list = withIsoDates(parseCsv(String(csv || '')), { defaultOrder: source === 'linkedin' ? 'mdy' : 'dmy' });
   if (!list.length) return res.status(400).json({ error: 'No dated rows found. Export a daily breakdown with a "Date" or "Day" column.' });
   let rows;
   if (['google_ads', 'openai_ads'].includes(source)) rows = adRowsToMetrics(list);
+  else if (social) rows = list.flatMap((r) => Object.entries(socialMetrics(r)).map(([metric, value]) => ({ metric, date: r.date, value })));
   else {
     rows = [];
     for (const r of list) for (const m of SOURCE_METRICS[source]) if (r[m] !== undefined && r[m] !== '') rows.push({ metric: m, date: r.date, value: toNumber(r[m]) });
   }
+  if (!rows.length) return res.status(400).json({ error: `Found dates but no columns I recognise. Expected something like: ${SOURCE_METRICS[source].join(', ')}.` });
   const dates = list.map((r) => r.date).sort();
-  const n = writeMetrics(source, rows, { from: dates[0], to: dates.at(-1) });
+  const metricsIn = [...new Set(rows.map((r) => r.metric))];
+  const n = writeMetrics(source, rows, { from: dates[0], to: dates.at(-1), onlyMetrics: social ? metricsIn : null });
   refreshRecommendations();
-  res.json({ rows: n, from: dates[0], to: dates.at(-1), columns: SOURCE_METRICS[source] });
+  res.json({ rows: n, from: dates[0], to: dates.at(-1), columns: metricsIn });
 });
 
 api.get('/settings', (req, res) => res.json(allSettings()));
