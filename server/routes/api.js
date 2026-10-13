@@ -12,7 +12,7 @@ import { STAGES, scoreLead, logActivity, queueEmail, flushOutbox, runSequences, 
 import { aiEnabled, MODEL } from '../services/ai.js';
 import { smtpConfigured } from '../services/mailer.js';
 import { jobState } from '../services/scheduler.js';
-import { parseCsv } from '../csv.js';
+import { parseCsv, withIsoDates, toNumber } from '../csv.js';
 import { clearDemo, seedDemoMetrics, seedDemoLeads, seedDemoOpportunities, seedWorkspace } from '../demo.js';
 
 export const api = express.Router();
@@ -316,15 +316,15 @@ api.post('/integrations/sync-all', wrap(async (req, res) => {
 api.post('/import/metrics', (req, res) => {
   const { source, csv } = req.body;
   if (!SOURCES[source]) return res.status(400).json({ error: 'Unknown source' });
-  const list = parseCsv(String(csv || ''));
-  if (!list.length || !list[0].date) return res.status(400).json({ error: 'CSV needs a header row with a "date" column' });
+  const list = withIsoDates(parseCsv(String(csv || '')));
+  if (!list.length) return res.status(400).json({ error: 'No dated rows found. Export a daily breakdown with a "Date" or "Day" column.' });
   let rows;
   if (['google_ads', 'openai_ads'].includes(source)) rows = adRowsToMetrics(list);
   else {
     rows = [];
-    for (const r of list) for (const m of SOURCE_METRICS[source]) if (r[m] !== undefined && r[m] !== '') rows.push({ metric: m, date: r.date.slice(0, 10), value: Number(r[m]) });
+    for (const r of list) for (const m of SOURCE_METRICS[source]) if (r[m] !== undefined && r[m] !== '') rows.push({ metric: m, date: r.date, value: toNumber(r[m]) });
   }
-  const dates = list.map((r) => r.date.slice(0, 10)).sort();
+  const dates = list.map((r) => r.date).sort();
   const n = writeMetrics(source, rows, { from: dates[0], to: dates.at(-1) });
   refreshRecommendations();
   res.json({ rows: n, from: dates[0], to: dates.at(-1), columns: SOURCE_METRICS[source] });

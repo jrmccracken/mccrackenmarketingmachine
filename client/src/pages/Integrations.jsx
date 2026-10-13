@@ -5,7 +5,7 @@ import { Card, PageHead, useFetch, useAction, Loading } from '../components/ui.j
 
 const IMPORT_SOURCES = [['openai_ads', 'ChatGPT Ads'], ['google_ads', 'Google Ads'], ['linkedin', 'LinkedIn'], ['facebook', 'Facebook'], ['instagram', 'Instagram'], ['email', 'Outbound email'], ['ga4', 'Website (GA4)'], ['gsc', 'Search Console']];
 const IMPORT_COLS = {
-  openai_ads: 'date, campaign, spend, impressions, clicks, conversions, conversion_value', google_ads: 'date, campaign, spend, impressions, clicks, conversions, conversion_value',
+  openai_ads: 'ChatGPT Ads Manager → Reporting → Export CSV (daily breakdown). Needs Day/Date, Campaign, Spend, Impressions, Clicks, Conversions; £ signs and UK dates are fine', google_ads: 'date, campaign, spend, impressions, clicks, conversions, conversion_value',
   linkedin: 'date, impressions, engagements, clicks, followers_gained', facebook: 'date, impressions, engagements, clicks, followers_gained', instagram: 'date, impressions, engagements, clicks, followers_gained',
   email: 'date, sent, opens, replies, clicks, bounces, opportunities', ga4: 'date, sessions, users, new_users, engaged_sessions, conversions', gsc: 'date, clicks, impressions, position_weighted',
 };

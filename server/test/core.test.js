@@ -94,3 +94,20 @@ test('unsubscribed leads cannot be emailed', () => {
   const id = db.prepare(`INSERT INTO leads(first_name, email, stage, unsubscribed, created_at, updated_at) VALUES ('U','u@x.example','new',1,?,?)`).run(ts, ts).lastInsertRowid;
   assert.throws(() => queueEmail({ lead: db.prepare('SELECT * FROM leads WHERE id = ?').get(id), subject: 's', body: 'b' }), /unsubscribed/);
 });
+
+test('ad-manager CSV exports import with UK dates, currency symbols and a totals row', async () => {
+  const { withIsoDates, toIsoDate } = await import('../csv.js');
+  const { adRowsToMetrics } = await import('../connectors/openai-ads.js');
+  assert.equal(toIsoDate('13/10/2026'), '2026-10-13');
+  assert.equal(toIsoDate('13 Oct 2026'), '2026-10-13');
+  assert.equal(toIsoDate('Oct 13, 2026'), '2026-10-13');
+  assert.equal(toIsoDate('Total'), null);
+  const csv = 'Day,Campaign name,Spend (GBP),Impressions,Clicks,CTR,Conversions\n12/10/2026,B2B growth,"£1,204.50","10,000",120,1.2%,3\nTotal,,"£1,204.50","10,000",120,1.2%,3\n';
+  const list = withIsoDates(parseCsv(csv));
+  assert.equal(list.length, 1);
+  const rows = adRowsToMetrics(list);
+  const get = (metric, dim = '') => rows.find((r) => r.metric === metric && (r.dim || '') === dim)?.value;
+  assert.equal(get('cost', 'B2B growth'), 1204.5);
+  assert.equal(get('impressions'), 10000);
+  assert.equal(get('conversions'), 3);
+});
