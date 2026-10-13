@@ -35,10 +35,10 @@ export function useAction() {
   return [busy, run];
 }
 
-export function PageHead({ title, sub, children }) {
+export function PageHead({ title, sub, eyebrow = 'McCracken Marketing', children }) {
   return (
     <div className="page-head">
-      <div><h1>{title}</h1>{sub && <p>{sub}</p>}</div>
+      <div>{eyebrow && <div className="eyebrow" style={{ marginBottom: 8 }}>{eyebrow}</div>}<h1>{title}</h1>{sub && <p>{sub}</p>}</div>
       {children && <div className="toolbar">{children}</div>}
     </div>
   );

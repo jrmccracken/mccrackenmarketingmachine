@@ -39,8 +39,8 @@ export default function App() {
       </div>
       <aside className={`sidebar ${open ? 'open' : ''}`}>
         <div className="brand">
-          <div className="brand-mark">M</div>
-          <div><strong>Marketing Machine</strong><small>{status?.company || 'McCracken Marketing'}</small></div>
+          <div className="logo" aria-hidden="true"><span>McCracken</span><span>Marketing</span></div>
+          <div><strong>Marketing Machine</strong><small>Internal workspace</small></div>
         </div>
         <nav className="nav">
           {NAV.map(([group, items]) => (
