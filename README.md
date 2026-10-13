@@ -34,7 +34,7 @@ Other scripts: `npm test`, `npm run sync` (pull every connector plus the radar f
 
 ## Connecting channels
 
-Open **Integrations**, click **Connect** on a channel, paste credentials, then **Sync now**. Credentials are stored in the local SQLite database (`data/mmm.db`). You can supply them as environment variables instead (see `.env.example`).
+Open **Integrations**, click **Connect** on a channel, paste credentials, then **Sync now**. Credentials, leads and settings are stored in a local SQLite database in your home folder (`Marketing Machine data/mmm.db`), outside the app folder, so downloading a new version never loses them. The first start of a new version brings over data from an older copy's `data/mmm.db` if it finds one next to it. You can supply them as environment variables instead (see `.env.example`).
 
 | Channel | What you need |
 |---|---|

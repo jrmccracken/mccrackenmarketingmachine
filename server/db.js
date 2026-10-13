@@ -1,11 +1,52 @@
 import { DatabaseSync } from 'node:sqlite';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 
-const DB_PATH = process.env.MMM_DB_PATH || path.resolve('data/mmm.db');
+// The database lives outside the app folder (in the user's home folder) so that downloading a new version of the
+// app never loses connections, leads or settings. MMM_DB_PATH overrides it.
+export const DATA_DIR = path.join(os.homedir(), 'Marketing Machine data');
+const DB_PATH = process.env.MMM_DB_PATH || path.join(DATA_DIR, 'mmm.db');
 fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+if (!process.env.MMM_DB_PATH && !fs.existsSync(DB_PATH)) adoptOldDatabase(DB_PATH);
+
+/**
+ * Earlier versions kept the database at <app folder>/data/mmm.db, and each download of the app made a new folder.
+ * Find those copies (this folder and its neighbours, e.g. other extracted downloads) and bring over the one with
+ * the most real content. VACUUM INTO folds in any unsaved write-ahead log, so nothing saved is lost.
+ */
+function adoptOldDatabase(target) {
+  const candidates = new Set([path.resolve('data/mmm.db')]);
+  const ls = (dir) => { try { return fs.readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => path.join(dir, d.name)); } catch { return []; } };
+  for (const sibling of ls(path.resolve('..'))) {
+    candidates.add(path.join(sibling, 'data', 'mmm.db'));
+    for (const inner of ls(sibling)) candidates.add(path.join(inner, 'data', 'mmm.db'));
+  }
+  let best = null;
+  for (const file of candidates) {
+    if (!fs.existsSync(file)) continue;
+    try {
+      const old = new DatabaseSync(file);
+      const count = (sql) => { try { return old.prepare(sql).get().n; } catch { return 0; } };
+      // Saved connections and settings matter most, then real (non-demo) leads and data.
+      const score = count('SELECT COUNT(*) n FROM settings') * 100
+        + count(`SELECT COUNT(*) n FROM leads WHERE source IS NOT 'Demo data'`) * 10
+        + count('SELECT COUNT(*) n FROM metrics WHERE demo = 0');
+      old.close();
+      if (score > 0 && (!best || score > best.score || (score === best.score && fs.statSync(file).mtimeMs > best.mtime))) {
+        best = { file, score, mtime: fs.statSync(file).mtimeMs };
+      }
+    } catch { /* not a readable database: skip */ }
+  }
+  if (!best) return;
+  const src = new DatabaseSync(best.file);
+  src.exec(`VACUUM INTO '${target.replace(/'/g, "''")}'`);
+  src.close();
+  console.log(`Brought your saved data across from ${best.file}`);
+}
 
 export const db = new DatabaseSync(DB_PATH);
+export const DB_FILE = DB_PATH;
 db.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON;');
 
 db.exec(`

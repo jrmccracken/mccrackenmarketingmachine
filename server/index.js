@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import path from 'node:path';
 import fs from 'node:fs';
-import { db } from './db.js';
+import { db, DB_FILE } from './db.js';
 import { api } from './routes/api.js';
 import { startScheduler } from './services/scheduler.js';
 import { seedWorkspace, seedDemoMetrics, seedDemoLeads, seedDemoOpportunities } from './demo.js';
@@ -41,4 +41,7 @@ refreshRecommendations();
 startScheduler();
 
 const port = Number(process.env.PORT || 3001);
-app.listen(port, () => console.log(`Marketing Machine API on http://localhost:${port}`));
+app.listen(port, () => {
+  console.log(`Marketing Machine API on http://localhost:${port}`);
+  console.log(`Your data is saved in ${DB_FILE}`);
+});
