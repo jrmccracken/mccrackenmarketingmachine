@@ -111,3 +111,25 @@ test('ad-manager CSV exports import with UK dates, currency symbols and a totals
   assert.equal(get('impressions'), 10000);
   assert.equal(get('conversions'), 3);
 });
+
+test('Lead pipeline import creates leads once, follows stage changes and builds email metrics', async () => {
+  const { importPipeline } = await import('../services/pipeline.js');
+  const lead = (status, extra = {}) => ({ id: 'acme-ltd', company: 'Acme Ltd', contact: 'Jo Bloggs', role: 'MD', email: 'jo@acme.example',
+    fit: 'A', status, addedOn: daysAgo(5), subject: 'Well done', body: 'Hi Jo', followup1: 'Hi again',
+    emailNote: 'Best guess, unverified. If it bounces, use info@acme.example.', ...extra });
+  assert.equal(importPipeline({ leads: [lead('Drafted')] }).created, 1);
+  const again = importPipeline(JSON.stringify([lead('Sent', { sentOn: daysAgo(3) })]));
+  assert.equal(again.created, 0);
+  assert.equal(again.stageChanges, 1);
+  const row = db.prepare(`SELECT * FROM leads WHERE external_id = 'pipeline:acme-ltd'`).get();
+  assert.equal(row.stage, 'contacted');
+  assert.equal(row.last_contacted_at.slice(0, 10), daysAgo(3));
+  const t = totals('email', daysAgo(10), daysAgo(0));
+  assert.equal(t.sent, 1);
+  assert.equal(t.prospects >= 1, true);
+  assert.equal(t.bounces, undefined); // "If it bounces" is advice, not a bounce
+  // A stage set only in the dashboard survives a re-import where the pipeline stage hasn't changed.
+  db.prepare(`UPDATE leads SET stage = 'meeting' WHERE id = ?`).run(row.id);
+  importPipeline([lead('Sent', { sentOn: daysAgo(3) })]);
+  assert.equal(db.prepare('SELECT stage FROM leads WHERE id = ?').get(row.id).stage, 'meeting');
+});

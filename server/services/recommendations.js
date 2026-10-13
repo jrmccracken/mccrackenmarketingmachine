@@ -170,6 +170,21 @@ export function ruleRecommendations() {
     detail: 'Leads in replied/meeting/proposal stages go cold quickly.',
     action: 'Send a short, useful nudge: a relevant case study, a benchmark or a specific idea for their business.',
     impact: 'Revives stalled deals' });
+  // Lead pipeline: Gmail drafts written by the Monday research run that haven't gone out yet.
+  const waiting = db.prepare(`SELECT COUNT(*) n, SUM(fit = 'A') a FROM leads WHERE pipeline_status = 'Drafted' AND created_at < ?`)
+    .get(new Date(Date.now() - 2 * 864e5).toISOString());
+  if (waiting.n) add({ fp: `pipeline:drafted:${waiting.n}`, source: 'email', priority: waiting.a ? 'high' : 'medium',
+    title: `${waiting.n} pipeline email${waiting.n > 1 ? 's are' : ' is'} drafted in Gmail but not sent${waiting.a ? ` (${waiting.a} fit A)` : ''}`,
+    detail: 'Trigger-based emails lose their hook within a couple of weeks of the news they mention.',
+    action: 'Open Gmail drafts and schedule two or three a day, fit A first. Then mark each one Sent in the Lead pipeline and re-import.',
+    impact: 'Turns this week\'s research into conversations' });
+  const cold = db.prepare(`SELECT COUNT(*) n FROM leads WHERE pipeline_status = 'Sent' AND last_contacted_at < ?`)
+    .get(new Date(Date.now() - 14 * 864e5).toISOString()).n;
+  if (cold) add({ fp: `pipeline:cold:${cold}`, source: 'email', priority: 'low',
+    title: `${cold} pipeline lead${cold > 1 ? 's have' : ' has'} had no reply for 14+ days`,
+    detail: 'After a first email and a follow-up, more chasing rarely helps and can annoy.',
+    action: 'Move them to Parked in the Lead pipeline and revisit when they have new news.',
+    impact: 'Keeps the pipeline honest' });
   const drafts = db.prepare(`SELECT COUNT(*) n FROM outbox WHERE status = 'draft'`).get().n;
   if (drafts) add({ fp: `outbox:drafts:${drafts}`, source: 'leads', priority: 'medium',
     title: `${drafts} outreach email${drafts > 1 ? 's are' : ' is'} waiting for your approval`,

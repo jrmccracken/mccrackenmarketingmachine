@@ -29,22 +29,41 @@ function Head({ title, sub, days, setDays, demo }) {
 const col = (key, extra = {}) => ({ key, label: KPI[key]?.label || key, f: KPI[key]?.f, r: true, ...extra });
 
 // ------------------------------------------------------------------ Outbound email
+// Fed by the Lead pipeline (Gmail drafts sent by hand), or by Instantly if that's connected instead.
 export function EmailPage() {
   const [days, setDays] = useRange();
   const { data, error, loading } = useChannel('email', days);
   if (error) return <ErrorBox error={error} />;
   if (loading && !data) return <Loading />;
+  const p = data.pipeline;
+  const fromPipeline = p?.total > 0;
+  const hasOpens = (data.snapshot?.current.opens || 0) > 0;
   return (
     <div className="stack">
-      <Head title="Outbound email" sub="Cold email campaigns from Instantly" days={days} setDays={setDays} demo={data.info.demo} />
+      <Head title="Outbound email" days={days} setDays={setDays} demo={data.info.demo}
+        sub={fromPipeline ? `From your Lead pipeline · last imported ${p.lastImport ? new Date(p.lastImport).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'never'}` : 'Connect your Lead pipeline on the Integrations page'} />
+      {fromPipeline && (
+        <Card title="Lead pipeline" sub="Where every researched prospect is right now" actions={<>
+          <a className="btn sm" href={p.url} target="_blank" rel="noreferrer">Open pipeline ↗</a>
+          <Link className="btn sm primary" to="/integrations">Update from pipeline</Link>
+        </>}>
+          <div className="funnel" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(90px, 1fr))' }}>
+            {['New', 'Drafted', 'Sent', 'Replied', 'Meeting', 'Proposal', 'Won', 'Parked', 'Lost'].map((s) => (
+              <div key={s}><strong className="num">{p.byStatus[s] || 0}</strong><span>{s}</span></div>
+            ))}
+          </div>
+        </Card>
+      )}
       {!data.snapshot ? <NoData label="email" /> : <>
-        <StatRow snap={data.snapshot} keys={['sent', 'open_rate', 'reply_rate', 'bounce_rate']} />
+        <StatRow snap={data.snapshot} keys={fromPipeline && !hasOpens ? ['prospects', 'sent', 'reply_rate', 'opportunities'] : ['sent', 'open_rate', 'reply_rate', 'bounce_rate']} />
         <div className="grid cols-2">
-          <Card title="Sends and opens per day"><LineChart data={data.series} series={[{ key: 'sent', label: 'Sent' }, { key: 'opens', label: 'Opens' }]} /></Card>
-          <Card title="Replies per day"><LineChart data={data.series} series={[{ key: 'replies', label: 'Replies' }]} /></Card>
+          <Card title="Emails sent per day"><LineChart data={data.series} series={[{ key: 'sent', label: 'Sent' }]} /></Card>
+          <Card title="Replies and meetings per day"><LineChart data={data.series} series={[{ key: 'replies', label: 'Replies' }, { key: 'opportunities', label: 'Meetings' }]} /></Card>
         </div>
-        <Card title="Campaigns" sub="Sorted by volume. Look for reply rate outliers in both directions.">
-          <DataTable rows={data.campaigns} initialSort={{ key: 'sent', dir: 'desc' }} cols={[
+        <Card title={fromPipeline ? 'By fit grade' : 'Campaigns'} sub={fromPipeline ? 'Is the A-list replying more than the rest?' : 'Sorted by volume. Look for reply rate outliers in both directions.'}>
+          <DataTable rows={data.campaigns} initialSort={{ key: fromPipeline ? 'prospects' : 'sent', dir: 'desc' }} cols={fromPipeline && !hasOpens ? [
+            { key: 'name', label: 'Segment' }, col('prospects'), col('sent'), col('replies'), col('reply_rate'), col('opportunities'), col('bounces'),
+          ] : [
             { key: 'name', label: 'Campaign' }, col('sent'), col('open_rate'), col('reply_rate'), col('replies'), col('bounce_rate'), col('opportunities'),
           ]} />
         </Card>

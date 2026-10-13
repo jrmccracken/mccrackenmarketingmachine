@@ -29,6 +29,7 @@ export function scoreLead(lead) {
   if (lead.industry && icp.some((t) => lead.industry.toLowerCase().includes(t))) s += 15;
   if (lead.website) s += 5;
   if (lead.linkedin) s += 5;
+  s += { A: 20, B: 10 }[lead.fit] || 0; // fit grade from the Lead pipeline research run
   s += { new: 0, contacted: 5, replied: 20, meeting: 25, proposal: 30, won: 30, lost: 0 }[lead.stage] || 0;
   return Math.min(100, s);
 }

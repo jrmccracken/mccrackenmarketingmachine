@@ -20,6 +20,7 @@ export default function Integrations() {
         <button className="btn primary" disabled={!!busy} onClick={() => run('all', () => api.post('/integrations/sync-all').then((r) => { reload(); return r; }),
           (r) => r.map((x) => `${x.id}: ${x.status}`).join(' · '))}>{busy === 'all' ? 'Syncing…' : 'Sync all now'}</button>
       </PageHead>
+      <PipelineCard onDone={reload} />
       {!data || !settings.data ? <Loading /> : data.map((c) => (
         <Connector key={c.id} c={c} settings={settings.data} busy={busy} run={run} reload={() => { reload(); settings.reload(); }} />
       ))}
@@ -61,6 +62,41 @@ function Connector({ c, settings, busy, run, reload }) {
           <p className="muted" style={{ margin: 0, fontSize: 12 }}>Credentials are stored in the local database on this server. You can also set them as environment variables instead (see README).</p>
         </div>
       )}
+    </Card>
+  );
+}
+
+function PipelineCard({ onDone }) {
+  const { data, reload } = useFetch('/pipeline');
+  const [json, setJson] = useState('');
+  const [busy, run] = useAction();
+  const doImport = (text) => run('p', () => api.post('/pipeline/import', { json: text }).then((r) => { setJson(''); reload(); onDone(); return r; }),
+    (r) => `${r.total} leads synced: ${r.created} new, ${r.stageChanges} stage change${r.stageChanges === 1 ? '' : 's'}`);
+  const paste = async () => {
+    try { const text = await navigator.clipboard.readText(); if (text) return doImport(text); } catch { /* clipboard blocked: fall back to the box */ }
+    document.getElementById('pipeline-json')?.focus();
+  };
+  return (
+    <Card title={<span className="row">Lead pipeline (outbound email) {data?.total > 0 && <span className="badge ok"><span className="dot" />Connected</span>}</span>}
+      sub={data?.lastImport ? `Last updated ${fmt.ago(data.lastImport)} · ${data.total} leads` : 'Your Monday lead engine. Its leads, Gmail drafts and stages feed the Leads and Outbound email pages.'}
+      actions={data?.url && <a className="btn sm" href={data.url} target="_blank" rel="noreferrer">Open pipeline ↗</a>}>
+      <div className="stack" style={{ gap: 10 }}>
+        <ol className="secondary" style={{ margin: 0, paddingLeft: 20 }}>
+          <li>Open the pipeline and click <strong>Export for dashboard</strong> at the top. It copies everything.</li>
+          <li>Come back here and click <strong>Paste from pipeline</strong>.</li>
+        </ol>
+        <div className="row">
+          <button className="btn primary" disabled={!!busy} onClick={paste}>{busy ? 'Updating…' : 'Paste from pipeline'}</button>
+          <span className="muted" style={{ fontSize: 12 }}>Do this after the Monday run and whenever you change stages in the pipeline.</span>
+        </div>
+        <details>
+          <summary className="muted" style={{ cursor: 'pointer', fontSize: 13 }}>Paste didn't work? Paste it into a box instead</summary>
+          <div className="stack" style={{ gap: 8, marginTop: 8 }}>
+            <textarea id="pipeline-json" className="input" rows={4} placeholder="Click here, press Ctrl+V, then Import" value={json} onChange={(e) => setJson(e.target.value)} />
+            <div><button className="btn" disabled={!json || !!busy} onClick={() => doImport(json)}>Import</button></div>
+          </div>
+        </details>
+      </div>
     </Card>
   );
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import { fmt } from '../lib/format.js';
-import { Card, PageHead, useFetch, useAction, Loading, ErrorBox, Modal } from '../components/ui.jsx';
+import { Card, PageHead, useFetch, useAction, Loading, ErrorBox, Modal, Seg } from '../components/ui.jsx';
 import { LeadForm, STAGES, Enroll } from './Leads.jsx';
 
 const toLocal = (iso) => (iso ? new Date(new Date(iso).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '');
@@ -31,7 +31,7 @@ export default function LeadDetail() {
         <button className="btn danger" onClick={() => confirm('Delete this lead and its history?') && run('d', () => api.del(`/leads/${id}`).then(() => nav('/leads')))}>Delete</button>
       </PageHead>
 
-      <div className="grid cols-3">
+      <div className="grid cols-3" style={{ alignItems: 'start' }}>
         <div className="stack">
           <Card title="Details">
             <div className="stack" style={{ gap: 10 }}>
@@ -73,6 +73,8 @@ export default function LeadDetail() {
         </div>
 
         <div className="stack span-2">
+          {lead.pipeline && <PipelinePanel lead={lead} onUse={(m) => setMail({ ...mail, ...m })} />}
+
           <Card title="Write an email" sub={lead.email ? `To ${lead.email}. Variables like {{first_name}} and {{company}} are filled in.` : 'Add an email address to this lead to send.'}
             actions={<>
               <input className="input" style={{ width: 200 }} value={mail.goal} onChange={(e) => setMail({ ...mail, goal: e.target.value })} aria-label="Goal" placeholder="Goal" />
@@ -149,5 +151,42 @@ function NotesEditor({ value, onSave }) {
       <textarea className="input" rows={5} value={v} onChange={(e) => setV(e.target.value)} />
       {v !== value && <div><button className="btn sm primary" onClick={() => onSave(v)}>Save notes</button></div>}
     </div>
+  );
+}
+
+/** The research and drafts the Monday lead engine wrote for this lead. Emails go out from Gmail, not from here. */
+function PipelinePanel({ lead, onUse }) {
+  const p = JSON.parse(lead.pipeline);
+  const [tab, setTab] = useState('first');
+  const [copied, setCopied] = useState('');
+  const subject = tab === 'first' ? p.subject : `Re: ${p.subject}`;
+  const body = tab === 'first' ? p.body : p.followup1;
+  const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(p.email || '')}&su=${encodeURIComponent(subject || '')}&body=${encodeURIComponent(body || '')}`;
+  const copy = async (what, text) => { try { await navigator.clipboard.writeText(text || ''); setCopied(what); setTimeout(() => setCopied(''), 1500); } catch { /* ignore */ } };
+  return (
+    <Card title={<span className="row">From the Lead pipeline {p.fit && <span className="badge">Fit {p.fit}</span>} <span className="badge">{p.status}</span></span>}
+      sub={p.trigger} actions={<a className="btn sm" href="https://claude.ai/artifact/KkZdbgtE5g3hZtga5DPpjp" target="_blank" rel="noreferrer">Open pipeline ↗</a>}>
+      <div className="stack" style={{ gap: 10 }}>
+        {p.angle && <p className="secondary" style={{ margin: 0 }}><strong>Angle:</strong> {p.angle}</p>}
+        <div className="row secondary" style={{ fontSize: 13 }}>
+          {p.source && <a href={p.source} target="_blank" rel="noreferrer">Read the story ↗</a>}
+          {p.location && <span>{p.location}</span>}
+          {p.emailNote && <span className="muted">{p.emailNote}</span>}
+        </div>
+        {p.body && <>
+          <Seg options={[['first', 'First email'], ['fu', 'Follow-up']]} value={tab} onChange={setTab} />
+          <div><strong>Subject:</strong> {subject}</div>
+          <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', margin: 0, padding: 12, background: 'var(--band)', border: '1px solid var(--border)' }}>{body}</pre>
+          <div className="row">
+            <a className="btn sm primary" href={gmail} target="_blank" rel="noreferrer">Open in Gmail</a>
+            <button className="btn sm" onClick={() => copy('s', subject)}>{copied === 's' ? 'Copied' : 'Copy subject'}</button>
+            <button className="btn sm" onClick={() => copy('b', body)}>{copied === 'b' ? 'Copied' : 'Copy email'}</button>
+            <button className="btn sm ghost" onClick={() => onUse({ subject, body })}>Edit below</button>
+          </div>
+          <p className="muted" style={{ margin: 0, fontSize: 12 }}>The Monday run already saved this as a Gmail draft. Send it from Gmail, then mark it Sent in the pipeline.</p>
+        </>}
+        {p.notes && <p className="muted" style={{ margin: 0, fontSize: 12.5 }}><strong>Pipeline notes:</strong> {p.notes}</p>}
+      </div>
+    </Card>
   );
 }

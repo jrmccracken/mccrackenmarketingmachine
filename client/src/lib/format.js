@@ -22,12 +22,13 @@ export const fmt = {
 
 // How each KPI should be formatted and whether "up" is good.
 export const KPI = {
+  prospects: { label: 'Prospects found', f: fmt.n, up: true },
   sent: { label: 'Emails sent', f: fmt.n, up: true },
   opens: { label: 'Opens', f: fmt.n, up: true },
   replies: { label: 'Replies', f: fmt.n, up: true },
   clicks: { label: 'Clicks', f: fmt.n, up: true },
   bounces: { label: 'Bounces', f: fmt.n, up: false },
-  opportunities: { label: 'Opportunities', f: fmt.n, up: true },
+  opportunities: { label: 'Meetings', f: fmt.n, up: true },
   open_rate: { label: 'Open rate', f: fmt.pct, up: true },
   reply_rate: { label: 'Reply rate', f: (v) => fmt.pct(v, 2), up: true },
   bounce_rate: { label: 'Bounce rate', f: fmt.pct, up: false },

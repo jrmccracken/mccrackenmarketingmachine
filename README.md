@@ -2,7 +2,7 @@
 
 The internal marketing workspace for McCracken Marketing. One place to:
 
-- **Monitor performance**: outbound email (Instantly), LinkedIn, Facebook, Instagram, website (GA4), Google Search Console, Google Ads and ChatGPT (OpenAI) Ads, each against the previous period.
+- **Monitor performance**: outbound email (your Claude Lead pipeline, or Instantly), LinkedIn, Facebook, Instagram, website (GA4), Google Search Console, Google Ads and ChatGPT (OpenAI) Ads, each against the previous period.
 - **Know what to do next**: a rules engine turns the numbers into ranked recommendations after every sync. Examples: campaigns spending without converting, queries one push from page one, bounce-rate warnings, overdue follow-ups. An optional **AI strategist** (Claude) reads everything and writes a weekly brief plus extra recommendations.
 - **Watch the market**: the **Market radar** scans Google News for your PR keywords and outbound buying triggers (funding, new marketing leaders, rebrands, launches) every 2 hours. It also reads any RSS feed you add. Each hit is scored and classed as PR or outbound, and you can draft a pitch or turn it into a lead in one click.
 - **Store and work leads**: a lightweight CRM with CSV import, scoring, a pipeline board, a per-lead timeline, follow-up reminders and notes.
@@ -38,7 +38,7 @@ Open **Integrations**, click **Connect** on a channel, paste credentials, then *
 
 | Channel | What you need |
 |---|---|
-| Outbound email | Instantly API v2 key (Settings → Integrations → API keys in Instantly). |
+| Outbound email | **Lead pipeline** (the Claude artifact your Monday lead engine fills): click *Export for dashboard* on the pipeline, then *Paste from pipeline* on the Integrations page. Leads, fit grades, Gmail drafts and stages come across; sent, reply and meeting dates feed the Outbound email page. Or connect Instantly with an API v2 key. |
 | GA4 + Search Console | A Google Cloud service account with the *Google Analytics Data API* and *Search Console API* enabled. Add its email as a **Viewer** on the GA4 property and as a **user** on the Search Console property. Paste the JSON key once; both connectors share it. |
 | Google Ads | Developer token, OAuth client ID/secret and a refresh token for a user with access to the account (generate with Google's OAuth playground or `google-ads` auth helpers). Add the MCC ID if you access the account through a manager. |
 | ChatGPT Ads | OpenAI's ads reporting access is still limited. Either point the connector at any JSON endpoint that returns daily rows (`date, campaign, spend, impressions, clicks, conversions`), or export a CSV from the ads manager and use **Import CSV**. |

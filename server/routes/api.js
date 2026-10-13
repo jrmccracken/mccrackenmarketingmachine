@@ -13,6 +13,7 @@ import { aiEnabled, MODEL } from '../services/ai.js';
 import { smtpConfigured } from '../services/mailer.js';
 import { jobState } from '../services/scheduler.js';
 import { parseCsv, withIsoDates, toNumber } from '../csv.js';
+import { importPipeline, pipelineStatus } from '../services/pipeline.js';
 import { clearDemo, seedDemoMetrics, seedDemoLeads, seedDemoOpportunities, seedWorkspace } from '../demo.js';
 
 export const api = express.Router();
@@ -24,7 +25,7 @@ const window = (req) => {
 
 // Which metrics each source charts, in order of importance.
 const SOURCE_METRICS = {
-  email: ['sent', 'opens', 'replies', 'clicks', 'bounces', 'opportunities'],
+  email: ['prospects', 'sent', 'opens', 'replies', 'clicks', 'bounces', 'opportunities'],
   linkedin: ['impressions', 'engagements', 'clicks', 'followers_gained'],
   facebook: ['impressions', 'engagements', 'clicks', 'followers_gained'],
   instagram: ['impressions', 'engagements', 'clicks', 'followers_gained'],
@@ -76,6 +77,7 @@ api.get('/channel/:source', (req, res) => {
   const out = { source, label: SOURCES[source].label, info: sourceInfo(source), snapshot: snap,
     series: series(source, SOURCE_METRICS[source], from, to), window: { from, to, days } };
   if (source === 'email' || source === 'google_ads' || source === 'openai_ads') out.campaigns = campaigns(source, from, to);
+  if (source === 'email') out.pipeline = pipelineStatus();
   if (source === 'ga4') {
     out.channels = breakdown('ga4', 'channel', from, to, { orderBy: 'sessions' }).map((c) => ({ ...derive('ga4', c), name: c.name }));
     out.pages = breakdown('ga4', 'page', from, to, { orderBy: 'sessions', limit: 25 }).map((c) => ({ ...derive('ga4', c), name: c.name }));
@@ -311,6 +313,18 @@ api.post('/integrations/sync-all', wrap(async (req, res) => {
   refreshRecommendations();
   res.json(r);
 }));
+
+// Lead pipeline (Claude artifact) sync: paste or upload its "Export for dashboard" JSON.
+api.get('/pipeline', (req, res) => res.json(pipelineStatus()));
+api.post('/pipeline/import', (req, res) => {
+  try {
+    const out = importPipeline(req.body.json ?? req.body);
+    refreshRecommendations();
+    res.json(out);
+  } catch (err) {
+    res.status(400).json({ error: err instanceof SyntaxError ? 'That doesn\'t look like a pipeline export. Copy it again with "Export for dashboard".' : err.message });
+  }
+});
 
 // CSV import for any source (useful for ChatGPT ads exports or channels without API access).
 api.post('/import/metrics', (req, res) => {

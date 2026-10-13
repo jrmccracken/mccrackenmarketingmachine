@@ -169,3 +169,11 @@ export function tx(fn) {
     throw err;
   }
 }
+
+// Additive migrations for databases created by earlier versions.
+const leadCols = new Set(db.prepare('PRAGMA table_info(leads)').all().map((c) => c.name));
+for (const [col, type] of [
+  ['external_id', 'TEXT'], ['fit', 'TEXT'], ['pipeline', 'TEXT'], ['pipeline_status', 'TEXT'],
+  ['replied_at', 'TEXT'], ['meeting_at', 'TEXT'],
+]) if (!leadCols.has(col)) db.exec(`ALTER TABLE leads ADD COLUMN ${col} ${type}`);
+db.exec('CREATE UNIQUE INDEX IF NOT EXISTS leads_external ON leads(external_id) WHERE external_id IS NOT NULL');

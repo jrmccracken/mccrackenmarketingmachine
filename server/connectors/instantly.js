@@ -7,7 +7,7 @@ const pick = (o, ...keys) => { for (const k of keys) if (o?.[k] != null) return 
 
 export default {
   id: 'email',
-  name: 'Outbound email (Instantly)',
+  name: 'Instantly (optional alternative to the pipeline)',
   category: 'Outbound email',
   docs: 'https://developer.instantly.ai/',
   fields: [{ key: 'instantly.api_key', label: 'Instantly API key (v2, analytics read scope)', secret: true }],

@@ -6,8 +6,10 @@ export function derive(source, t) {
   const v = (k) => t[k] || 0;
   switch (source) {
     case 'email':
-      return { ...t, open_rate: ratio(v('opens'), v('sent')), reply_rate: ratio(v('replies'), v('sent')),
-        bounce_rate: ratio(v('bounces'), v('sent')), click_rate: ratio(v('clicks'), v('sent')) };
+      // Rates are blank (not 0%) until something has been sent.
+      return { ...t, ...(v('sent') ? { open_rate: ratio(v('opens'), v('sent')), reply_rate: ratio(v('replies'), v('sent')),
+        bounce_rate: ratio(v('bounces'), v('sent')), click_rate: ratio(v('clicks'), v('sent')) }
+        : { open_rate: null, reply_rate: null, bounce_rate: null, click_rate: null }) };
     case 'ga4':
       return { ...t, engagement_rate: ratio(v('engaged_sessions'), v('sessions')), conversion_rate: ratio(v('conversions'), v('sessions')) };
     case 'gsc':
