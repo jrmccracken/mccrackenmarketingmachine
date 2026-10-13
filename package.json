@@ -1,0 +1,35 @@
+{
+  "name": "mccracken-marketing-machine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Internal marketing machine for McCracken Marketing: channel performance, recommendations, market monitoring and lead outreach.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,magenta \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "node --watch --disable-warning=ExperimentalWarning server/index.js",
+    "dev:web": "vite",
+    "build": "vite build",
+    "start": "node --disable-warning=ExperimentalWarning server/index.js",
+    "seed": "node --disable-warning=ExperimentalWarning server/seed.js",
+    "sync": "node --disable-warning=ExperimentalWarning server/cli-sync.js",
+    "test": "node --disable-warning=ExperimentalWarning --test \"server/test/*.test.js\""
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.133.0",
+    "dotenv": "^18.0.7",
+    "express": "^4.22.3",
+    "fast-xml-parser": "^5.11.2",
+    "nodemailer": "^10.1.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.2",
+    "concurrently": "^10.0.6",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-router-dom": "^7.18.4",
+    "vite": "^8.3.4"
+  }
+}
