@@ -208,3 +208,17 @@ test('visitor log: organisations are scored by intent, ISPs are set aside, and f
   assert.equal(out.people[0].email, 'kim@pennine.example');
   assert.equal(out.unresolved, 1); // the BT home broadband visitor
 });
+
+test('Clarity responses become daily metrics; rates average rather than add up', async () => {
+  const { clarityMetrics, byDimension } = await import('../connectors/clarity.js');
+  const site = { Traffic: { totalSessionCount: '120', totalBotSessionCount: '30', distinctUserCount: '90', pagesPerSessionPercentage: 1.6 },
+    ScrollDepth: { averageScrollDepth: 54.2 }, RageClickCount: { sessionsWithMetricPercentage: 4.5 } };
+  assert.deepEqual(clarityMetrics(site), { sessions: 120, bot_sessions: 30, users: 90, pages_per_session: 1.6, scroll_depth: 54.2, rage_click_pct: 4.5 });
+  const pages = byDimension([{ metricName: 'Traffic', information: [{ Url: 'https://x.example/contact', totalSessionCount: '20' }] }], 'Url');
+  assert.equal(clarityMetrics(pages.get('https://x.example/contact')).sessions, 20);
+  writeMetrics('clarity', [{ metric: 'scroll_depth', date: daysAgo(3), value: 40 }, { metric: 'scroll_depth', date: daysAgo(2), value: 60 },
+    { metric: 'sessions', date: daysAgo(3), value: 10 }, { metric: 'sessions', date: daysAgo(2), value: 15 }], {});
+  const t = totals('clarity', daysAgo(5), daysAgo(1));
+  assert.equal(t.scroll_depth, 50);
+  assert.equal(t.sessions, 25);
+});

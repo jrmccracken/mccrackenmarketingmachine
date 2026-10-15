@@ -1,6 +1,6 @@
 import { db, now } from '../db.js';
 import { snapshot, campaigns, searchQueries } from './insights.js';
-import { daysAgo } from '../metrics.js';
+import { daysAgo, breakdown } from '../metrics.js';
 import { ask, aiEnabled, MODEL } from './ai.js';
 import { visitorInsights } from './visitors.js';
 
@@ -157,6 +157,15 @@ export function ruleRecommendations() {
     detail: 'Posts that perform well on LinkedIn make strong cold-email hooks and ad creatives.',
     action: 'Take the top two posts this month and turn them into a cold email opener and a paid social ad.',
     impact: 'Cheaper creative testing' });
+
+  // ---------- Clarity: pages where visitors are visibly frustrated.
+  const clarityPages = breakdown('clarity', 'page', snap.window.from, to, { orderBy: 'sessions', limit: 50 })
+    .filter((p) => (p.sessions || 0) >= 20 && ((p.rage_click_pct || 0) >= 5 || (p.dead_click_pct || 0) >= 15 || (p.quickback_pct || 0) >= 20));
+  if (clarityPages.length) add({ fp: `clarity:frustration:${clarityPages.map((p) => p.name).join('|')}`, source: 'ga4', priority: 'medium',
+    title: `${clarityPages.length} page${clarityPages.length > 1 ? 's are' : ' is'} frustrating visitors`,
+    detail: clarityPages.slice(0, 4).map((p) => `${p.name}: ${(p.rage_click_pct || 0).toFixed(1)}% rage clicks, ${(p.dead_click_pct || 0).toFixed(1)}% dead clicks, ${(p.quickback_pct || 0).toFixed(1)}% quick backs`).join('; '),
+    action: 'Watch three or four Clarity recordings of each page filtered by rage or dead clicks, then fix what people are trying to click (make it a link, or make it look less like one).',
+    impact: 'More of your traffic reaches the contact page' });
 
   // ---------- Pipeline hygiene
   const overdue = db.prepare(`SELECT COUNT(*) n FROM leads WHERE next_follow_up_at IS NOT NULL AND next_follow_up_at < ? AND stage NOT IN ('won','lost')`).get(now()).n;

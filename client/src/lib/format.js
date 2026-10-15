@@ -23,6 +23,16 @@ export const fmt = {
 // How each KPI should be formatted and whether "up" is good.
 export const KPI = {
   visitors: { label: 'Visitors', f: fmt.n, up: true },
+  // Clarity reports these as percentages (0-100) and seconds.
+  scroll_depth: { label: 'Avg. scroll depth', f: (v) => (v == null ? '–' : `${Math.round(v)}%`), up: true },
+  engagement_time: { label: 'Active time', f: (v) => (v == null ? '–' : v >= 60 ? `${Math.floor(v / 60)}m ${Math.round(v % 60)}s` : `${Math.round(v)}s`), up: true },
+  rage_click_pct: { label: 'Rage clicks', f: (v) => (v == null ? '–' : `${v.toFixed(1)}%`), up: false },
+  dead_click_pct: { label: 'Dead clicks', f: (v) => (v == null ? '–' : `${v.toFixed(1)}%`), up: false },
+  quickback_pct: { label: 'Quick backs', f: (v) => (v == null ? '–' : `${v.toFixed(1)}%`), up: false },
+  script_error_pct: { label: 'Script errors', f: (v) => (v == null ? '–' : `${v.toFixed(1)}%`), up: false },
+  pages_per_session: { label: 'Pages / session', f: (v) => (v == null ? '–' : v.toFixed(2)), up: true },
+  page_views: { label: 'Page views', f: fmt.n, up: true },
+  unique_visitors: { label: 'Unique visitors', f: fmt.n, up: true },
   pageviews: { label: 'Page views', f: fmt.n, up: true },
   enquiries: { label: 'Website enquiries', f: fmt.n, up: true },
   prospects: { label: 'Prospects found', f: fmt.n, up: true },

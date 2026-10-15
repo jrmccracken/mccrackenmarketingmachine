@@ -28,8 +28,9 @@ const window = (req) => {
 const SOURCE_METRICS = {
   forms: ['enquiries'],
   visitors: ['pageviews', 'visitors'],
+  clarity: ['sessions', 'users', 'pages_per_session', 'scroll_depth', 'engagement_time', 'rage_click_pct', 'dead_click_pct', 'quickback_pct', 'script_error_pct'],
   email: ['prospects', 'sent', 'opens', 'replies', 'clicks', 'bounces', 'opportunities'],
-  linkedin: ['impressions', 'engagements', 'clicks', 'followers_gained'],
+  linkedin: ['impressions', 'engagements', 'clicks', 'followers_gained', 'page_views', 'unique_visitors'],
   facebook: ['impressions', 'engagements', 'clicks', 'followers_gained'],
   instagram: ['impressions', 'engagements', 'clicks', 'followers_gained'],
   ga4: ['sessions', 'users', 'new_users', 'engaged_sessions', 'conversions'],
@@ -85,6 +86,7 @@ api.get('/channel/:source', (req, res) => {
     out.channels = breakdown('ga4', 'channel', from, to, { orderBy: 'sessions' }).map((c) => ({ ...derive('ga4', c), name: c.name }));
     out.pages = breakdown('ga4', 'page', from, to, { orderBy: 'sessions', limit: 25 }).map((c) => ({ ...derive('ga4', c), name: c.name }));
   }
+  if (source === 'clarity') out.pages = breakdown('clarity', 'page', from, to, { orderBy: 'sessions', limit: 50 });
   if (source === 'gsc') { out.queries = searchQueries(from, to, 200); out.pages = searchPages(from, to, 50); }
   res.json(out);
 });
@@ -307,7 +309,7 @@ api.get('/integrations', (req, res) => {
   })));
 });
 api.post('/integrations/:id/sync', wrap(async (req, res) => {
-  const r = await syncConnector(req.params.id, { days: Number(req.body?.days) || 30 });
+  const r = await syncConnector(req.params.id, { days: Number(req.body?.days) || 30, force: true });
   refreshRecommendations();
   res.json(r);
 }));

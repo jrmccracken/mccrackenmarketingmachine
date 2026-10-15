@@ -68,6 +68,8 @@ const SOCIAL_ALIASES = {
   clicks: ['clicks', 'clicks_total', 'total_clicks', 'clicks_organic', 'link_clicks'],
   engagements: ['engagements', 'total_engagements', 'engagement', 'interactions', 'total_interactions'],
   followers_gained: ['followers_gained', 'new_followers', 'total_followers', 'follows', 'net_followers', 'followers'],
+  page_views: ['total_page_views_total', 'page_views_total', 'page_views', 'overview_page_views_total'],
+  unique_visitors: ['total_unique_visitors_total', 'unique_visitors_total', 'unique_visitors'],
 };
 const ENGAGEMENT_PARTS = [['reactions_total', 'reactions', 'likes'], ['comments_total', 'comments'], ['reposts_total', 'reposts', 'shares_total', 'shares']];
 

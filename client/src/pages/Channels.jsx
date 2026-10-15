@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { fmt, KPI } from '../lib/format.js';
-import { Card, PageHead, Seg, RANGES, useRange, useFetch, Loading, ErrorBox, StatRow, DataTable, DemoBadge, Delta } from '../components/ui.jsx';
+import { Card, PageHead, Seg, RANGES, useRange, useFetch, Loading, ErrorBox, StatRow, DataTable, DemoBadge, Delta, Stat } from '../components/ui.jsx';
 import { LineChart, BarList } from '../components/Chart.jsx';
 
 function useChannel(source, days) {
@@ -107,6 +107,7 @@ export function WebsitePage() {
   const [days, setDays] = useRange();
   const { data, error, loading } = useChannel('ga4', days);
   const forms = useChannel('forms', days);
+  const clarity = useChannel('clarity', days);
   if (error) return <ErrorBox error={error} />;
   if (loading && !data) return <Loading />;
   const enquiries = forms.data?.snapshot;
@@ -128,6 +129,18 @@ export function WebsitePage() {
               { key: 'name', label: 'Channel' }, col('sessions'), col('engagement_rate'), col('conversions'), col('conversion_rate')]} />
           </Card>
         </div>
+        {clarity.data?.snapshot && (
+          <Card title="How visitors behave (Microsoft Clarity)" sub="Daily averages. Frustration signals show the share of sessions where people rage-clicked, clicked something dead or bounced straight back."
+            actions={<a className="btn sm" href="https://clarity.microsoft.com" target="_blank" rel="noreferrer">Open Clarity ↗</a>}>
+            <div className="grid cols-4" style={{ marginBottom: 14 }}>
+              {['sessions', 'scroll_depth', 'engagement_time', 'rage_click_pct'].map((k) => (
+                <Stat key={k} k={k} value={clarity.data.snapshot.current[k]} change={clarity.data.snapshot.change[k]} />
+              ))}
+            </div>
+            <DataTable rows={clarity.data.pages} initialSort={{ key: 'sessions', dir: 'desc' }} empty="Page-level data appears after the first daily sync" cols={[
+              { key: 'name', label: 'Page' }, col('sessions'), col('scroll_depth'), col('engagement_time'), col('rage_click_pct'), col('dead_click_pct'), col('quickback_pct')]} />
+          </Card>
+        )}
         {enquiries && (
           <div className="grid cols-2">
             <Card title="Website enquiries per day" sub={`${fmt.n(enquiries.current.enquiries)} in the last ${days} days · from your Netlify forms`}

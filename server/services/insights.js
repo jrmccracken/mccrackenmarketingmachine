@@ -10,6 +10,8 @@ export function derive(source, t) {
       return { ...t, ...(v('sent') ? { open_rate: ratio(v('opens'), v('sent')), reply_rate: ratio(v('replies'), v('sent')),
         bounce_rate: ratio(v('bounces'), v('sent')), click_rate: ratio(v('clicks'), v('sent')) }
         : { open_rate: null, reply_rate: null, bounce_rate: null, click_rate: null }) };
+    case 'clarity':
+      return t;
     case 'forms':
     case 'visitors':
       return { ...t };

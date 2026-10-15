@@ -45,16 +45,20 @@ export function series(source, metrics, from, to) {
   return [...byDate].map(([date, vals]) => ({ date, ...vals }));
 }
 
+// Daily rates and averages (Clarity's scroll depth, % of sessions with rage clicks…) are averaged over a period, not added up.
+export const isAverage = (metric) => /_pct$|^scroll_depth$|^pages_per_session$|^engagement_time$/.test(metric);
+
 export function totals(source, from, to) {
-  const rows = db.prepare(`SELECT metric, SUM(value) v FROM metrics
+  const rows = db.prepare(`SELECT metric, SUM(value) s, AVG(value) a FROM metrics
     WHERE source = ? AND dim_type = '' AND date BETWEEN ? AND ? GROUP BY metric`).all(source, from, to);
-  return Object.fromEntries(rows.map((r) => [r.metric, r.v]));
+  return Object.fromEntries(rows.map((r) => [r.metric, isAverage(r.metric) ? r.a : r.s]));
 }
 
 /** Totals broken down by a dimension (campaign, query, page, channel, post). */
 export function breakdown(source, dimType, from, to, { orderBy, limit = 50 } = {}) {
-  const rows = db.prepare(`SELECT dim, metric, SUM(value) v FROM metrics
-    WHERE source = ? AND dim_type = ? AND date BETWEEN ? AND ? GROUP BY dim, metric`).all(source, dimType, from, to);
+  const rows = db.prepare(`SELECT dim, metric, SUM(value) s, AVG(value) a FROM metrics
+    WHERE source = ? AND dim_type = ? AND date BETWEEN ? AND ? GROUP BY dim, metric`).all(source, dimType, from, to)
+    .map((r) => ({ ...r, v: isAverage(r.metric) ? r.a : r.s }));
   const map = new Map();
   for (const r of rows) {
     if (!map.has(r.dim)) map.set(r.dim, { name: r.dim });

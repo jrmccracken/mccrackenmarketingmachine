@@ -7,14 +7,16 @@ import linkedin from './linkedin.js';
 import meta from './meta.js';
 import netlify from './netlify.js';
 import visitors from './visitors.js';
+import clarity from './clarity.js';
 
-export const connectors = [netlify, visitors, email, linkedin, meta, ga4, gsc, googleAds, openaiAds];
+export const connectors = [netlify, visitors, clarity, email, linkedin, meta, ga4, gsc, googleAds, openaiAds];
 export const connectorById = Object.fromEntries(connectors.map((c) => [c.id, c]));
 
 // Metric sources (what ends up in metrics.source) each connector writes.
 export const SOURCES = {
   forms: { label: 'Website enquiries', connector: 'netlify' },
   visitors: { label: 'Company visitors', connector: 'visitors' },
+  clarity: { label: 'Clarity (behaviour)', connector: 'clarity' },
   email: { label: 'Outbound email', connector: 'email' },
   linkedin: { label: 'LinkedIn', connector: 'linkedin' },
   facebook: { label: 'Facebook', connector: 'meta' },
