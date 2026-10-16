@@ -47,6 +47,7 @@ api.get('/status', (req, res) => {
     ai: aiEnabled(), model: MODEL, smtp: smtpConfigured(),
     demo: !!db.prepare('SELECT 1 FROM metrics WHERE demo = 1 LIMIT 1').get(),
     jobs: jobState,
+    version: (process.env.RENDER_GIT_COMMIT || '').slice(0, 7) || 'local',
     counts: {
       recommendations: db.prepare(`SELECT COUNT(*) n FROM recommendations WHERE status='open'`).get().n,
       opportunities: db.prepare(`SELECT COUNT(*) n FROM opportunities WHERE status='new'`).get().n,

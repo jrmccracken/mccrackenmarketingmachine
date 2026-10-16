@@ -60,6 +60,7 @@ export default function App() {
           <span>AI strategist: {status?.ai ? 'on' : 'off (add key in Settings)'}</span>
           <span>Email sending: {status?.smtp ? 'SMTP connected' : 'not connected'}</span>
           {status?.demo && <span>Showing demo data for unconnected channels</span>}
+          {status?.version && <span>Version {status.version}</span>}
         </div>
       </aside>
       <main className="main">

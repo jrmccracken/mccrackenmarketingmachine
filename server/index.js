@@ -13,7 +13,8 @@ const app = express();
 app.use(express.json({ limit: '50mb' }));
 
 // Health check for the hosting platform (no data, so it sits before the password check).
-app.get('/healthz', (req, res) => res.send('ok'));
+export const VERSION = (process.env.RENDER_GIT_COMMIT || '').slice(0, 7) || 'local';
+app.get('/healthz', (req, res) => res.send(`ok ${VERSION}`));
 
 // Password protection. Required when hosted (credentials and leads live in the database); optional on a laptop.
 const password = process.env.MMM_PASSWORD;
@@ -36,8 +37,13 @@ app.use('/api', api);
 
 const dist = path.resolve('dist');
 if (fs.existsSync(dist)) {
-  app.use(express.static(dist));
-  app.get(/^(?!\/api).*/, (req, res) => res.sendFile(path.join(dist, 'index.html')));
+  // index.html is never cached, so phones pick up a new deploy on the next refresh; hashed assets cache forever.
+  const noCache = (res) => res.setHeader('Cache-Control', 'no-cache');
+  app.use(express.static(dist, { index: false, setHeaders: (res, file) => {
+    if (file.includes(`${path.sep}assets${path.sep}`)) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    else noCache(res);
+  } }));
+  app.get(/^(?!\/api).*/, (req, res) => { noCache(res); res.sendFile(path.join(dist, 'index.html')); });
 }
 
 // First run: templates always; demo data unless disabled.
