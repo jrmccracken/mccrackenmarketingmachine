@@ -34,7 +34,7 @@ function Queue() {
           <button className="btn primary" disabled={!!busy || !data?.smtp} title={data?.smtp ? '' : 'Connect SMTP in Settings'} onClick={() => run('flush', () => api.post('/outbox/flush').then((r) => { reload(); return r; }), (r) => r.skipped || `${r.sent} sent`)}>Send approved now</button>
         </div>
       </div>
-      {data && !data.smtp && <div className="notice">Email sending isn't connected yet. Add SMTP details (Google Workspace, Microsoft 365 or any provider) in <Link to="/settings">Settings</Link>. Until then, copy drafts into your own inbox.</div>}
+      {data && !data.smtp && <div className="notice"><span>Email sending isn't connected yet. Add SMTP details (Google Workspace, Microsoft 365 or any provider) in <Link to="/settings">Settings</Link>. Until then, copy drafts into your own inbox.</span></div>}
       <Card>
         {loading && !data ? <Loading /> : data.items.length ? data.items.map((o) => (
           <div className="rec" key={o.id} style={{ gridTemplateColumns: '1fr auto' }}>

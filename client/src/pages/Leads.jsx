@@ -44,6 +44,24 @@ export default function Leads() {
       {error && <ErrorBox error={error} />}
       {loading && !data ? <Loading /> : view === 'table' ? (
         <Card>
+          <div className="only-mobile">
+            {leads.length ? leads.slice(0, 200).map((l) => (
+              <Link key={l.id} to={`/leads/${l.id}`} className="lead-card">
+                <div className="row between" style={{ alignItems: 'flex-start', flexWrap: 'nowrap' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <strong>{[l.first_name, l.last_name].filter(Boolean).join(' ') || l.company}</strong>
+                    <div className="muted" style={{ fontSize: 13 }}>{[l.title, l.company].filter(Boolean).join(' · ')}</div>
+                  </div>
+                  <div className="row" style={{ flexWrap: 'nowrap', gap: 4 }}>
+                    {l.fit && <span className="badge">{l.fit}</span>}
+                    <span className="badge">{l.pipeline_status || l.stage}</span>
+                  </div>
+                </div>
+                {l.next_follow_up_at && <div style={{ fontSize: 12, marginTop: 4 }} className={new Date(l.next_follow_up_at) < new Date() ? 'bad' : 'muted'}>Follow-up {fmt.ago(l.next_follow_up_at)}</div>}
+              </Link>
+            )) : <div className="empty">No leads yet. Add one or import a CSV.</div>}
+          </div>
+          <div className="only-desktop">
           <DataTable rows={leads} onRow={(r) => nav(`/leads/${r.id}`)} limit={200} empty="No leads yet. Add one or import a CSV." cols={[
             { key: 'sel', label: '', render: (r) => <input type="checkbox" aria-label="Select" checked={selected.has(r.id)} onClick={(e) => e.stopPropagation()} onChange={() => toggle(r.id)} /> },
             { key: 'last_name', label: 'Name', render: (r) => <><strong>{r.first_name} {r.last_name}</strong><div className="sub">{r.title}</div></> },
@@ -55,6 +73,7 @@ export default function Leads() {
             { key: 'last_contacted_at', label: 'Last touch', f: fmt.ago },
             { key: 'next_follow_up_at', label: 'Follow-up', render: (r) => r.next_follow_up_at ? <span className={new Date(r.next_follow_up_at) < new Date() ? 'bad' : ''}>{fmt.ago(r.next_follow_up_at)}</span> : <span className="muted">–</span> },
           ]} />
+          </div>
         </Card>
       ) : (
         <div className="kanban">

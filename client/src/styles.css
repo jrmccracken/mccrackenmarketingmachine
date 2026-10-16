@@ -83,7 +83,7 @@ h3 { font-size: 14px; font-weight: 700; }
 .between { justify-content: space-between; }
 
 .card { background: var(--surface-1); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; min-width: 0; }
-.card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; }
+.card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
 .card-head p { margin: 4px 0 0; font-size: 13px; color: var(--text-muted); }
 
 /* ---------- stat tiles */
@@ -108,7 +108,7 @@ textarea.input { resize: vertical; min-height: 80px; }
 .input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
 ::placeholder { color: var(--text-muted); }
 label.field { display: grid; gap: 4px; font-size: 12.5px; color: var(--text-secondary); }
-.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 2px; overflow: hidden; background: var(--band); }
+.seg { display: inline-flex; flex-wrap: wrap; max-width: 100%; border: 1px solid var(--border); border-radius: 2px; overflow: hidden; background: var(--band); }
 .seg button { border: 0; background: transparent; padding: 6px 12px; cursor: pointer; color: var(--text-secondary); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 .seg button + button { border-left: 1px solid var(--border); }
 .seg button.on { background: var(--accent); color: var(--accent-ink); }
@@ -144,6 +144,10 @@ td .sub { font-size: 12px; color: var(--text-muted); }
 .list-item { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--grid); align-items: flex-start; }
 .list-item:last-child { border-bottom: 0; }
 .empty { padding: 28px 12px; text-align: center; color: var(--text-muted); }
+.only-mobile { display: none; }
+@media (max-width: 760px) { .only-mobile { display: block; } }
+.lead-card { display: block; padding: 12px 0; border-bottom: 1px solid var(--grid); text-decoration: none; }
+.lead-card:last-child { border-bottom: 0; }
 
 /* ---------- chart */
 .chart { position: relative; }
@@ -191,9 +195,31 @@ td .sub { font-size: 12px; color: var(--text-muted); }
   .app { grid-template-columns: 1fr; }
   .sidebar { position: fixed; z-index: 40; width: 260px; transform: translateX(-100%); transition: transform .2s; }
   .sidebar.open { transform: none; box-shadow: 0 0 40px rgba(0,0,0,.3); }
+  .mobile-bar { padding-top: calc(10px + env(safe-area-inset-top, 0px)); }
   .mobile-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border); background: var(--band); position: sticky; top: 0; z-index: 30; }
   .main { padding: 16px; }
-  .cols-2, .cols-3, .cols-4 { grid-template-columns: 1fr; }
+  .cols-2, .cols-3 { grid-template-columns: 1fr; }
+  /* Stat tiles two-up on phones so the headline numbers fit on one screen. */
+  .cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .cols-4 > .card { padding: 12px; }
+  .stat-value { font-size: 26px; }
+  .stat-label { font-size: 10.5px; letter-spacing: .08em; }
+  .card { padding: 14px; }
+  .grid { gap: 12px; }
+  .page-head { margin-bottom: 14px; }
+  .page-head p { font-size: 14.5px; }
+  .toolbar { width: 100%; }
+  /* Fixed-width inputs and selects go full width; nothing pushes the page sideways. */
+  .input { width: 100% !important; min-width: 0 !important; flex: 1 1 100% !important; }
+  .row { min-width: 0; }
+  .btn { white-space: normal; text-align: center; }
+  .seg button { padding: 7px 10px; font-size: 11px; }
+  /* Cards with an action column stack: label, text, then actions. */
+  .rec { grid-template-columns: 1fr !important; gap: 8px; }
+  .rec > :last-child { justify-content: flex-start !important; max-width: none !important; }
+  .notice { flex-direction: column; align-items: flex-start; }
+  .only-desktop { display: none !important; }
+  .main { padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); }
   .span-2 { grid-column: auto; }
   .funnel { grid-template-columns: repeat(4, 1fr); }
   .funnel > div { border-radius: 6px !important; }

@@ -48,7 +48,7 @@ export function LineChart({ data, series, height = 220, format = fmt.n, area = s
           {series.map((s, i) => <span key={s.key}><span className="key" style={{ background: SERIES[i] }} />{s.label}</span>)}
         </div>
       )}
-      {data.length > 0 && <svg ref={ref} viewBox={`0 0 ${W} ${H}`} onMouseMove={onMove} onMouseLeave={() => setHover(null)} role="img"
+      {data.length > 0 && <svg ref={ref} viewBox={`0 0 ${W} ${H}`} onPointerMove={onMove} onPointerDown={onMove} onMouseLeave={() => setHover(null)} style={{ touchAction: 'pan-y' }} role="img"
         aria-label={`${series.map((s) => s.label).join(', ')} over time`}>
         <g className="axis">
           {ticks.map((t) => (
