@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../lib/api.js';
 import { fmt } from '../lib/format.js';
+import { gmailLink } from '../lib/gmail.js';
 import { Card, PageHead, Seg, Modal, useFetch, useAction, Loading } from '../components/ui.jsx';
 
 export default function Outreach() {
@@ -31,10 +32,10 @@ function Queue() {
         <div className="row">
           {data && <span className="muted num" style={{ fontSize: 12 }}>{data.sentToday}/{data.dailyLimit} sent today</span>}
           {status === 'draft' && data?.items.length > 0 && <button className="btn" disabled={!!busy} onClick={() => run('all', () => api.post('/outbox/approve-all').then(reload), (r) => `${r.changed} approved`)}>Approve all</button>}
-          <button className="btn primary" disabled={!!busy || !data?.smtp} title={data?.smtp ? '' : 'Connect SMTP in Settings'} onClick={() => run('flush', () => api.post('/outbox/flush').then((r) => { reload(); return r; }), (r) => r.skipped || `${r.sent} sent`)}>Send approved now</button>
+          <button className="btn primary" disabled={!!busy || !data?.smtp} title={data?.smtp ? '' : 'Connect SMTP in Settings'} onClick={() => run('flush', () => api.post('/outbox/flush').then((r) => { reload(); return r; }), (r) => r.skipped || (r.error ? `${r.sent} sent, ${r.failed} failed: ${r.error}` : `${r.sent} sent`))}>Send approved now</button>
         </div>
       </div>
-      {data && !data.smtp && <div className="notice"><span>Email sending isn't connected yet. Add SMTP details (Google Workspace, Microsoft 365 or any provider) in <Link to="/settings">Settings</Link>. Until then, copy drafts into your own inbox.</span></div>}
+      {data && !data.smtp && <div className="notice"><span>Email sending isn't connected yet. Add SMTP details (Google Workspace, Microsoft 365 or any provider) in <Link to="/settings">Settings</Link>. Until then, use "Open in Gmail" on each email, then "Mark sent".</span></div>}
       <Card>
         {loading && !data ? <Loading /> : data.items.length ? data.items.map((o) => (
           <div className="rec" key={o.id} style={{ gridTemplateColumns: '1fr auto' }}>
@@ -50,7 +51,11 @@ function Queue() {
                 <button className="btn sm" onClick={() => setEdit({ ...o })}>Edit</button>
                 <button className="btn sm primary" disabled={busy === o.id} onClick={() => set(o.id, 'approved')}>Approve</button>
               </>}
-              {['draft', 'approved', 'failed'].includes(o.status) && <button className="btn sm ghost" onClick={() => set(o.id, 'cancelled')}>Cancel</button>}
+              {['draft', 'approved', 'failed'].includes(o.status) && <>
+                <a className="btn sm" href={gmailLink({ to: o.to_email, subject: o.subject, body: o.body })} target="_blank" rel="noreferrer">Open in Gmail</a>
+                <button className="btn sm" disabled={busy === `s${o.id}`} onClick={() => run(`s${o.id}`, () => api.post(`/outbox/${o.id}/sent`).then(reload), 'Marked as sent')}>Mark sent</button>
+                <button className="btn sm ghost" onClick={() => set(o.id, 'cancelled')}>Cancel</button>
+              </>}
             </div>
           </div>
         )) : <div className="empty">Nothing here.</div>}

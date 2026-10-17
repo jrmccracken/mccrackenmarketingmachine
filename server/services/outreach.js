@@ -59,21 +59,28 @@ export async function flushOutbox() {
   const room = Math.max(0, limit - sentToday());
   const items = db.prepare(`SELECT o.*, l.unsubscribed FROM outbox o JOIN leads l ON l.id = o.lead_id WHERE o.status = 'approved' ORDER BY o.id LIMIT ?`).all(room);
   let sent = 0;
+  const errors = [];
   for (const o of items) {
     if (o.unsubscribed) { db.prepare(`UPDATE outbox SET status='cancelled', error='unsubscribed' WHERE id=?`).run(o.id); continue; }
     try {
       await sendMail({ to: o.to_email, subject: o.subject, text: o.body });
-      tx(() => {
-        db.prepare(`UPDATE outbox SET status='sent', sent_at=?, error=NULL WHERE id=?`).run(now(), o.id);
-        db.prepare(`UPDATE leads SET last_contacted_at=?, updated_at=?, stage=CASE WHEN stage='new' THEN 'contacted' ELSE stage END WHERE id=?`).run(now(), now(), o.lead_id);
-        logActivity(o.lead_id, { type: 'email', direction: 'out', subject: o.subject, body: o.body });
-      });
+      markSent(o);
       sent++;
     } catch (err) {
-      db.prepare(`UPDATE outbox SET status='failed', error=? WHERE id=?`).run(String(err.message).slice(0, 300), o.id);
+      db.prepare(`UPDATE outbox SET status='failed', error=? WHERE id=?`).run(String(err.message).slice(0, 500), o.id);
+      errors.push(err.message);
     }
   }
-  return { sent };
+  return { sent, failed: errors.length, error: errors[0] || null, waiting: Math.max(0, db.prepare(`SELECT COUNT(*) n FROM outbox WHERE status='approved'`).get().n) };
+}
+
+/** Record an outbox email as sent (by SMTP, or by hand from Gmail). */
+export function markSent(o) {
+  tx(() => {
+    db.prepare(`UPDATE outbox SET status='sent', sent_at=?, error=NULL WHERE id=?`).run(now(), o.id);
+    db.prepare(`UPDATE leads SET last_contacted_at=?, updated_at=?, stage=CASE WHEN stage='new' THEN 'contacted' ELSE stage END WHERE id=?`).run(now(), now(), o.lead_id);
+    logActivity(o.lead_id, { type: 'email', direction: 'out', subject: o.subject, body: o.body });
+  });
 }
 
 /** Advance active sequence enrollments whose next step is due. Replies/won/lost stop the sequence. */

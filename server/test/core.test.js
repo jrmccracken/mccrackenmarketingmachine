@@ -222,3 +222,12 @@ test('Clarity responses become daily metrics; rates average rather than add up',
   assert.equal(t.scroll_depth, 50);
   assert.equal(t.sessions, 25);
 });
+
+test('SMTP errors are explained in plain English', async () => {
+  const { explainMailError } = await import('../services/mailer.js');
+  const { setSettings } = await import('../settings.js');
+  setSettings({ 'smtp.host': 'smtp.gmail.com', 'smtp.port': '465' });
+  assert.match(explainMailError({ code: 'EAUTH', message: '535-5.7.8 Username and Password not accepted' }), /app password/);
+  assert.match(explainMailError({ code: 'ETIMEDOUT', message: 'Connection timeout' }), /Render/);
+  assert.match(explainMailError({ code: 'EDNS', message: 'getaddrinfo ENOTFOUND smtp.gmal.com' }), /SMTP host/);
+});

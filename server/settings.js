@@ -56,7 +56,8 @@ export function setSettings(obj) {
 export function allSettings() {
   const rows = db.prepare('SELECT key, value FROM settings').all();
   const out = { ...DEFAULTS };
-  for (const r of rows) out[r.key] = r.value;
+  // state.* rows are internal bookkeeping, not settings people edit.
+  for (const r of rows) if (!r.key.startsWith('state.')) out[r.key] = r.value;
   for (const key of SECRET_KEYS) out[key] = out[key] ?? '';
   for (const key of Object.keys(out)) {
     const env = process.env[envName(key)];

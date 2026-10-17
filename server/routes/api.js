@@ -6,11 +6,11 @@ import { adRowsToMetrics } from '../connectors/openai-ads.js';
 import { series, breakdown, daysAgo, sourceInfo, writeMetrics } from '../metrics.js';
 import { snapshot, campaigns, searchQueries, searchPages, derive } from '../services/insights.js';
 import { refreshRecommendations, aiBrief } from '../services/recommendations.js';
-import { runMonitor, draftForOpportunity, googleNewsUrl } from '../services/monitor.js';
+import { runMonitor, draftForOpportunity, googleNewsUrl, lastScan } from '../services/monitor.js';
 import { syncConnector, syncAll, lastRuns } from '../services/sync.js';
-import { STAGES, scoreLead, logActivity, queueEmail, flushOutbox, runSequences, enroll, draftEmail, render, sentToday } from '../services/outreach.js';
+import { STAGES, scoreLead, logActivity, queueEmail, flushOutbox, markSent, runSequences, enroll, draftEmail, render, sentToday } from '../services/outreach.js';
 import { aiEnabled, MODEL } from '../services/ai.js';
-import { smtpConfigured } from '../services/mailer.js';
+import { smtpConfigured, sendMail } from '../services/mailer.js';
 import { jobState } from '../services/scheduler.js';
 import { parseCsv, withIsoDates, toNumber, socialMetrics } from '../csv.js';
 import { importPipeline, pipelineStatus } from '../services/pipeline.js';
@@ -67,7 +67,7 @@ api.get('/overview', (req, res) => {
     recommendations: db.prepare(`SELECT * FROM recommendations WHERE status='open' ORDER BY CASE priority WHEN 'high' THEN 0 WHEN 'medium' THEN 1 ELSE 2 END, updated_at DESC LIMIT 6`).all(),
     followUps: db.prepare(`SELECT id, first_name, last_name, company, stage, next_follow_up_at, score FROM leads
       WHERE next_follow_up_at IS NOT NULL AND next_follow_up_at <= ? AND stage NOT IN ('won','lost') ORDER BY next_follow_up_at LIMIT 8`).all(new Date(Date.now() + 864e5).toISOString()),
-    opportunities: db.prepare(`SELECT * FROM opportunities WHERE status='new' ORDER BY score DESC, found_at DESC LIMIT 6`).all(),
+    opportunities: db.prepare(`SELECT * FROM opportunities WHERE status='new' ORDER BY substr(COALESCE(published_at, found_at), 1, 10) DESC, score DESC LIMIT 6`).all(),
     brief: db.prepare('SELECT * FROM briefs ORDER BY id DESC LIMIT 1').get() || null,
     pipeline: STAGES.map((s) => pipeline.find((p) => p.stage === s) || { stage: s, n: 0, value: 0 }),
   });
@@ -112,7 +112,10 @@ api.get('/opportunities', (req, res) => {
   where.push(req.query.status ? 'status = ?' : "status IN ('new','saved')");
   if (req.query.status) args.push(req.query.status);
   if (req.query.q) { where.push('(title LIKE ? OR summary LIKE ?)'); args.push(`%${req.query.q}%`, `%${req.query.q}%`); }
-  res.json(db.prepare(`SELECT * FROM opportunities WHERE ${where.join(' AND ')} ORDER BY score DESC, found_at DESC LIMIT 300`).all(...args));
+  // Newest first (by day), best score within a day, so fresh news isn't buried under older high scorers.
+  const items = db.prepare(`SELECT * FROM opportunities WHERE ${where.join(' AND ')}
+    ORDER BY substr(COALESCE(published_at, found_at), 1, 10) DESC, score DESC LIMIT 300`).all(...args);
+  res.json({ items, lastScan: lastScan(), demo: items.some((o) => o.demo) });
 });
 api.patch('/opportunities/:id', (req, res) => {
   db.prepare('UPDATE opportunities SET status = ? WHERE id = ?').run(req.body.status, req.params.id);
@@ -184,6 +187,7 @@ api.get('/leads/:id', (req, res) => {
     lead,
     activities: db.prepare('SELECT * FROM activities WHERE lead_id = ? ORDER BY id DESC').all(lead.id),
     outbox: db.prepare('SELECT * FROM outbox WHERE lead_id = ? ORDER BY id DESC').all(lead.id),
+    smtp: smtpConfigured(), sender: { sender_name: getSetting('sender.name'), my_company: getSetting('company.name') },
     enrollments: db.prepare('SELECT e.*, s.name FROM enrollments e JOIN sequences s ON s.id = e.sequence_id WHERE lead_id = ?').all(lead.id),
   });
 });
@@ -250,6 +254,8 @@ api.post('/leads/:id/email', wrap(async (req, res) => {
   const lead = db.prepare('SELECT * FROM leads WHERE id = ?').get(req.params.id);
   if (!lead) return res.status(404).json({ error: 'Not found' });
   const id = queueEmail({ lead, subject: render(req.body.subject, lead), body: render(req.body.body, lead), approve: !!req.body.approve });
+  // Sent by hand from Gmail: log it straight away.
+  if (req.body.manual) { markSent(db.prepare('SELECT * FROM outbox WHERE id = ?').get(id)); return res.json({ id, manual: true }); }
   const flushed = req.body.approve ? await flushOutbox() : null;
   res.json({ id, flushed });
 }));
@@ -268,6 +274,18 @@ api.patch('/outbox/:id', (req, res) => {
     .run(subject ?? null, body ?? null, status ?? null, req.params.id);
   res.json({ ok: true });
 });
+api.post('/outbox/:id/sent', (req, res) => {
+  const o = db.prepare('SELECT * FROM outbox WHERE id = ?').get(req.params.id);
+  if (!o) return res.status(404).json({ error: 'Not found' });
+  markSent(o);
+  res.json({ ok: true });
+});
+api.post('/settings/test-email', wrap(async (req, res) => {
+  const to = getSetting('sender.email') || getSetting('smtp.user');
+  if (!to) return res.status(400).json({ error: 'Add a From email in Settings → Sending first.' });
+  await sendMail({ to, subject: 'Marketing Machine test email', text: 'Email sending from the Marketing Machine is working.' });
+  res.json({ to });
+}));
 api.post('/outbox/approve-all', (req, res) => res.json({ changed: db.prepare(`UPDATE outbox SET status='approved' WHERE status='draft'`).run().changes }));
 api.post('/outbox/flush', wrap(async (req, res) => { runSequences(); res.json(await flushOutbox()); }));
 

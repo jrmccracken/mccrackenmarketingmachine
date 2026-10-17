@@ -13,7 +13,7 @@ const SECTIONS = [
     ['monitor.icp_terms', 'ICP terms that boost a score (industries, company types)', 'area'],
     ['monitor.region', 'News region (GB, US, IE, AU…)'],
   ]],
-  ['Sending', 'Outreach sends through your own mailbox over SMTP. For Google Workspace use smtp.gmail.com, port 465 and an app password.', [
+  ['Sending', 'Optional: lets the dashboard send emails itself. Without it, use "Open in Gmail" on any email. For Google Workspace: host smtp.gmail.com, port 465, username your full email, password a Google app password (myaccount.google.com/apppasswords), not your normal password.', [
     ['sender.name', 'From name'], ['sender.email', 'From email'], ['sender.signature', 'Signature', 'area'],
     ['smtp.host', 'SMTP host'], ['smtp.port', 'SMTP port'], ['smtp.user', 'SMTP username'], ['smtp.pass', 'SMTP password', 'secret'],
     ['outreach.daily_limit', 'Daily send limit'],
@@ -47,6 +47,13 @@ export default function Settings() {
               </label>
             ))}
           </div>
+          {title === 'Sending' && (
+            <div className="row" style={{ marginTop: 12 }}>
+              <button className="btn" disabled={!!busy} onClick={() => run('t', async () => { await api.put('/settings', vals).then(setVals); return api.post('/settings/test-email'); }, (r) => `Test email sent to ${r.to}. Check your inbox.`)}>
+                {busy === 't' ? 'Sending…' : 'Save and send a test email'}
+              </button>
+            </div>
+          )}
         </Card>
       ))}
       <div><button className="btn primary" disabled={!!busy} onClick={save}>Save settings</button></div>

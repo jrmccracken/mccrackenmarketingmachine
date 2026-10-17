@@ -4,6 +4,7 @@ import { api } from '../lib/api.js';
 import { fmt } from '../lib/format.js';
 import { Card, PageHead, useFetch, useAction, Loading, ErrorBox, Modal, Seg } from '../components/ui.jsx';
 import { LeadForm, STAGES, Enroll } from './Leads.jsx';
+import { gmailLink, fillVars } from '../lib/gmail.js';
 
 const toLocal = (iso) => (iso ? new Date(new Date(iso).getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 16) : '');
 
@@ -20,7 +21,9 @@ export default function LeadDetail() {
   useEffect(() => { setMail({ subject: '', body: '', goal: 'book an intro call' }); }, [id]);
   if (error) return <ErrorBox error={error} />;
   if (loading && !data) return <Loading />;
-  const { lead, activities, outbox, enrollments } = data;
+  const { lead, activities, outbox, enrollments, smtp, sender } = data;
+  const ready = lead.email && mail.subject && mail.body;
+  const sendResult = (r) => (r.flushed?.sent ? 'Sent' : r.flushed?.error ? `Not sent: ${r.flushed.error}` : r.flushed?.skipped ? `Not sent: ${r.flushed.skipped}` : 'Approved. It will go out when today\'s send limit resets.');
   const patch = (body, msg) => run('p', () => api.patch(`/leads/${id}`, body).then(reload), msg);
 
   return (
@@ -86,9 +89,12 @@ export default function LeadDetail() {
               <input className="input" placeholder="Subject" value={mail.subject} onChange={(e) => setMail({ ...mail, subject: e.target.value })} />
               <textarea className="input" rows={8} placeholder="Message" value={mail.body} onChange={(e) => setMail({ ...mail, body: e.target.value })} />
               <div className="row" style={{ justifyContent: 'flex-end' }}>
-                <button className="btn" disabled={!lead.email || !mail.subject || !mail.body || busy} onClick={() => run('q', () => api.post(`/leads/${id}/email`, mail).then(() => { setMail({ ...mail, subject: '', body: '' }); reload(); }), 'Saved to the approval queue')}>Save to approval queue</button>
-                <button className="btn primary" disabled={!lead.email || !mail.subject || !mail.body || busy} onClick={() => run('s', () => api.post(`/leads/${id}/email`, { ...mail, approve: true }).then((r) => { setMail({ ...mail, subject: '', body: '' }); reload(); return r; }),
-                  (r) => (r.flushed?.sent ? 'Sent' : r.flushed?.skipped ? `Approved but not sent: ${r.flushed.skipped}` : 'Approved and queued (daily limit reached)'))}>Send now</button>
+                <button className="btn" disabled={!ready || busy} onClick={() => run('q', () => api.post(`/leads/${id}/email`, mail).then(() => { setMail({ ...mail, subject: '', body: '' }); reload(); }), 'Saved to the approval queue')}>Save to approval queue</button>
+                {/* Gmail needs no setup: open the filled-in email there and log it here as sent. */}
+                <a className={`btn ${smtp ? '' : 'primary'}`} aria-disabled={!ready} style={ready ? undefined : { pointerEvents: 'none', opacity: 0.5 }}
+                  href={ready ? gmailLink({ to: lead.email, subject: fillVars(mail.subject, lead, sender), body: fillVars(mail.body, lead, sender) }) : undefined} target="_blank" rel="noreferrer"
+                  onClick={() => run('g', () => api.post(`/leads/${id}/email`, { ...mail, manual: true }).then(() => { setMail({ ...mail, subject: '', body: '' }); reload(); }), 'Opened in Gmail and logged as sent')}>Open in Gmail</a>
+                {smtp && <button className="btn primary" disabled={!ready || busy} onClick={() => run('s', () => api.post(`/leads/${id}/email`, { ...mail, approve: true }).then((r) => { setMail({ ...mail, subject: '', body: '' }); reload(); return r; }), sendResult)}>Send now</button>}
               </div>
             </div>
           </Card>
@@ -161,7 +167,7 @@ function PipelinePanel({ lead, onUse }) {
   const [copied, setCopied] = useState('');
   const subject = tab === 'first' ? p.subject : `Re: ${p.subject}`;
   const body = tab === 'first' ? p.body : p.followup1;
-  const gmail = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(p.email || '')}&su=${encodeURIComponent(subject || '')}&body=${encodeURIComponent(body || '')}`;
+  const gmail = gmailLink({ to: p.email, subject, body });
   const copy = async (what, text) => { try { await navigator.clipboard.writeText(text || ''); setCopied(what); setTimeout(() => setCopied(''), 1500); } catch { /* ignore */ } };
   return (
     <Card title={<span className="row">From the Lead pipeline {p.fit && <span className="badge">Fit {p.fit}</span>} <span className="badge">{p.status}</span></span>}

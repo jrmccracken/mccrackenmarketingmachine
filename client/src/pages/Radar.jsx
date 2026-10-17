@@ -8,7 +8,9 @@ export default function Radar() {
   const [kind, setKind] = useState('');
   const [status, setStatus] = useState('');
   const [q, setQ] = useState('');
-  const { data, error, loading, reload } = useFetch(`/opportunities?kind=${kind}&status=${status}&q=${encodeURIComponent(q)}`);
+  const { data: res, error, loading, reload } = useFetch(`/opportunities?kind=${kind}&status=${status}&q=${encodeURIComponent(q)}`);
+  const data = res?.items;
+  const scan = res?.lastScan;
   const [busy, run] = useAction();
   const [draft, setDraft] = useState(null);
   const [toLead, setToLead] = useState(null);
@@ -20,8 +22,15 @@ export default function Radar() {
       <PageHead title="Market radar" sub="News, journalist requests and buying signals that match your keywords. Scanned every 2 hours.">
         <button className="btn" onClick={() => setFeeds(true)}>Sources & keywords</button>
         <button className="btn primary" disabled={busy === 'scan'} onClick={() => run('scan', () => api.post('/opportunities/run').then((r) => { reload(); return r; }),
-          (r) => `${r.added} new opportunities${r.errors.length ? ` · ${r.errors.length} sources failed` : ''}`)}>{busy === 'scan' ? 'Scanning…' : 'Scan now'}</button>
+          (r) => `${r.added} new opportunities from ${r.found} articles${r.failed ? ` · ${r.failed} of ${r.sources} sources failed` : ''}`)}>{busy === 'scan' ? 'Scanning…' : 'Scan now'}</button>
       </PageHead>
+      {res && (
+        <div className="notice"><span>
+          {scan ? <>Last scan {fmt.ago(scan.at)}: {scan.added} new from {scan.found} articles across {scan.sources} searches.{scan.failed ? ` ${scan.failed} searches failed (${scan.errors[0]}).` : ''}{scan.added === 0 && scan.found > 0 ? ' Nothing new matched your keywords, so broaden them in Settings → Market radar.' : ''}</>
+            : 'No scan has run yet on this copy. Press "Scan now".'}
+          {res.demo && ' The items marked "Demo data" are examples and disappear after the first successful scan.'}
+        </span></div>
+      )}
       <div className="row between">
         <div className="row">
           <Seg options={[['', 'All'], ['pr', 'PR'], ['outbound', 'Outbound']]} value={kind} onChange={setKind} />
