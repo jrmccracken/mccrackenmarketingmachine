@@ -1,3 +1,9 @@
+# Internal notes and function source live in the publish folder; keep them off the public site
+/PRODUCTION-RUNBOOK.txt   /404.html   404!
+/MAILCHIMP-SETUP.txt   /404.html   404!
+/SEO-QUERY-MAP.txt   /404.html   404!
+/netlify/*   /404.html   404!
+
 /blog/marketing-director-interview-questions/   /blog/marketing-director-interview-questions-uk/   301
 /courses/            /marketing-courses-uk/                    301
 /fractional-cmo/*   https://mccrackenmarketing.co.uk   301
