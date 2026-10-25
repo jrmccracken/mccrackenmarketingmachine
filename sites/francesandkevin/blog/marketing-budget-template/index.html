@@ -530,7 +530,7 @@ a.nav-highlight:hover{color:var(--mg)!important;background:var(--mg-pale)!import
 .nav-open .nav-links>li>a{padding:15px 18px;font-size:16px;border-radius:var(--r);border-bottom:1px solid var(--border);color:var(--dark);display:flex;align-items:center;justify-content:space-between}
 .nav-open .nav-links a.nav-highlight{background:var(--mg-pale);color:var(--mg)!important;font-weight:700}
 .nav-open .nav-links .nav-cta{margin-top:8px;padding:16px!important;font-size:16px!important;border-bottom:none!important;border-radius:var(--r)!important;text-align:center;justify-content:center!important;background:var(--mg)!important;color:#fff!important}
-.nav-open .has-drop>a.has-drop-toggle::after{content:"BE";font-size:14px;color:var(--light);transition:transform .25s;flex-shrink:0}
+.nav-open .has-drop>a.has-drop-toggle::after{content:"\25BE";font-size:14px;color:var(--light);transition:transform .25s;flex-shrink:0}
 .nav-open .has-drop.open>a.has-drop-toggle::after{transform:rotate(180deg)}
 .nav-open .has-drop .dropdown{display:none!important}
 .nav-open .has-drop.open .dropdown{display:flex!important;z-index:1100!important;position:static!important;border:none!important;border-left:3px solid var(--mg)!important;border-radius:0!important;box-shadow:none!important;padding:4px 0 4px 12px!important;margin:4px 0 8px!important;background:transparent!important;min-width:0!important;gap:0!important}
@@ -744,28 +744,35 @@ footer img[src*="cpd" i]{max-width:180px!important;width:auto!important;height:a
   <ul class="nav-links" id="nav-links">
     <li><a href="/marketing-course-for-professionals/" class="nav-highlight">Leadership Programme</a></li>
     <li class="has-drop">
-      <a href="/marketing-courses-uk/" class="has-drop-toggle" aria-haspopup="true" aria-expanded="false">All Courses</a>
+      <a href="/marketing-courses-uk/" class="has-drop-toggle" aria-haspopup="true" aria-expanded="false">Courses</a>
       <div class="dropdown">
         <div class="dd-label">Leadership &amp; Strategy</div>
-        <a href="/marketing-course-for-business-owners/">Marketing for Business Owners <span class="dd-price">&pound;399</span></a>
         <a href="/marketing-course-for-professionals/">Marketing Director Course <span class="dd-price">&pound;799</span></a>
-        <a href="/ai-marketing-course-senior-marketers/">AI Marketing Course <span class="dd-price">New</span></a>
         <a href="/sostac-masterclasses/">SOSTAC&reg; Planning Course <span class="dd-price">&pound;595</span></a>
-        <a href="/launch-your-interim-marketing-career/">From In-House, In-Demand <span class="dd-price">&pound;699</span></a>
-        <div class="dd-label" style="margin-top:12px">Digital Skills</div>
+        <a href="/launch-your-interim-marketing-career/">Interim Career Course <span class="dd-price">&pound;699</span></a>
+        <a href="/ai-marketing-course-senior-marketers/">AI for Senior Marketers <span class="dd-price">New</span></a>
+        <a href="/marketing-course-for-business-owners/">Marketing for Business Owners <span class="dd-price">&pound;399</span></a>
+        <div class="dd-label" style="margin-top:12px">Skills Courses</div>
         <a href="/google-analytics-4-training/">Google Analytics 4 <span class="dd-price">&pound;199</span></a>
         <a href="/linkedin-bootcamp/">LinkedIn Bootcamp <span class="dd-price">&pound;199</span></a>
         <a href="/introduction-to-digital-pr/">Digital PR Training <span class="dd-price">&pound;199</span></a>
-        <div class="dd-label" style="margin-top:12px">Other Programmes</div>
         <a href="/graduate-marketing-starter-course/">Graduate Starter Course <span class="dd-price">&pound;150</span></a>
-        <a href="/in-house-marketing-training-team-development/">In-House Team Training <span class="dd-price">Bespoke</span></a>
-        <a href="/free-marketing-guide-uk/" style="color:var(--mg)">Free Marketing Guide <span class="dd-price">Free</span></a>
+        <a href="/marketing-courses-uk/" style="color:var(--mg);font-weight:600;margin-top:6px">Compare all courses &rarr;</a>
       </div>
     </li>
     <li><a href="/in-house-marketing-training-team-development/">For Teams</a></li>
     <li><a href="/case-studies/">Success Stories</a></li>
-    <li><a href="/knowledge-centre/">Knowledge Centre</a></li>
-    <li><a href="/free-marketing-guide-uk/" style="color:var(--mg);font-weight:600">Free Guide</a></li>
+    <li class="has-drop">
+      <a href="/knowledge-centre/" class="has-drop-toggle" aria-haspopup="true" aria-expanded="false">Resources</a>
+      <div class="dropdown" style="left:auto;right:0">
+        <a href="/playbook/">Free Director Playbook</a>
+        <a href="/marketing-leadership-readiness-score/">Leadership Readiness Score</a>
+        <a href="/knowledge-centre/">Knowledge Centre</a>
+        <a href="/marketing-training-uk/">UK Marketing Training Guide</a>
+        <a href="/marketing-director-salary-report-2026/">Salary Report 2026</a>
+        <a href="/free-marketing-guide-uk/">Free Guide for Business Owners</a>
+      </div>
+    </li>
     <li><a href="/get-in-touch/" class="nav-cta-link">Talk to James</a></li>
   </ul>
   <div class="nav-actions">
@@ -1306,5 +1313,18 @@ function switchTab(btn, panelId) {
 })();
 </script>
 <script id="fk-keyboard-nav-v26">document.addEventListener('keydown',function(e){if(e.key==='Escape'){document.body.classList.remove('nav-open');document.body.style.overflow='';document.querySelectorAll('.has-drop.open').forEach(function(el){el.classList.remove('open');var a=el.querySelector('.has-drop-toggle');if(a)a.setAttribute('aria-expanded','false');});var overlay=document.getElementById('exit-overlay');if(overlay&&overlay.style.display!=='none'&&typeof window.dismissExitIntent==='function')window.dismissExitIntent();}});document.querySelectorAll('.has-drop-toggle').forEach(function(a){a.addEventListener('focus',function(){if(window.innerWidth>1024)a.setAttribute('aria-expanded','true')});a.addEventListener('blur',function(){setTimeout(function(){var li=a.closest('.has-drop');if(li&&!li.contains(document.activeElement))a.setAttribute('aria-expanded','false')},0)});});</script>
+<script id="fk-nav-v29">
+/* One handler for the mobile menu on every page. Runs in the capture phase so older per-page handlers don't double-toggle. */
+(function(){
+  function closeDrops(){document.querySelectorAll('.has-drop.open').forEach(function(el){el.classList.remove('open');var t=el.querySelector('.has-drop-toggle');if(t)t.setAttribute('aria-expanded','false');});}
+  function setOpen(open){document.body.classList.toggle('nav-open',open);document.body.style.overflow=open?'hidden':'';var b=document.getElementById('hamburger');if(b){b.setAttribute('aria-expanded',open?'true':'false');b.setAttribute('aria-label',open?'Close menu':'Open menu');}if(!open)closeDrops();}
+  document.addEventListener('click',function(e){
+    if(e.target.closest('#hamburger')){e.preventDefault();e.stopPropagation();setOpen(!document.body.classList.contains('nav-open'));return;}
+    var t=e.target.closest('#nav-links .has-drop-toggle');
+    if(t&&window.innerWidth<=1024){e.preventDefault();e.stopPropagation();var li=t.closest('.has-drop'),was=li.classList.contains('open');closeDrops();if(!was){li.classList.add('open');t.setAttribute('aria-expanded','true');}return;}
+    if(e.target.closest('#nav-links a')&&document.body.classList.contains('nav-open'))setOpen(false);
+  },true);
+})();
+</script>
 </body>
 </html>
