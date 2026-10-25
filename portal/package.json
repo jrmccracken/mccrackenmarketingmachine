@@ -1,0 +1,37 @@
+{
+  "name": "marketing-control-centre",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "McCracken Marketing client portal (Marketing Control Centre).",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "tsx scripts/dev-server.ts",
+    "build": "vite build",
+    "preview": "vite build && tsx scripts/dev-server.ts --dist",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "tsx --test --test-concurrency=1 tests/*.test.ts",
+    "bootstrap-admin": "tsx scripts/bootstrap-admin.ts",
+    "db:start": "supabase start",
+    "db:reset": "supabase db reset"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router-dom": "^7.18.4"
+  },
+  "devDependencies": {
+    "@netlify/functions": "^6.0.3",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "supabase": "^2.122.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
+  }
+}

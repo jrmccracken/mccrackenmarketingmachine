@@ -85,3 +85,7 @@ All metrics live in one table (`source, metric, date, dimension → value`), so 
 - A daily send limit applies (default 40).
 - Replies (logged on the lead, or moving the lead to replied/meeting/won/lost) stop sequences and cancel pending sequence emails.
 - "Do not email" on a lead blocks all sends to it.
+
+## Marketing Control Centre (client portal)
+
+The `portal/` folder is a separate app: the private client portal for McCracken Marketing clients, deployed as its own Netlify site. See [portal/README.md](portal/README.md), [docs/SECURITY.md](docs/SECURITY.md), [docs/OPERATIONS.md](docs/OPERATIONS.md) and [docs/WEBSITE-CHANGES.md](docs/WEBSITE-CHANGES.md). It doesn't affect the Marketing Machine dashboard or its Render deployment.

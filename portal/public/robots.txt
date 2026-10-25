@@ -1,0 +1,4 @@
+# The portal is private. Every page also sends X-Robots-Tag: noindex, nofollow,
+# so pages are left crawlable here for search engines to see that instruction.
+User-agent: *
+Disallow: /api/
