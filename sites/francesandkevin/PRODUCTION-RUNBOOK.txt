@@ -1,0 +1,41 @@
+FRANCES & KEVIN — PRODUCTION RUNBOOK
+Updated: 13 September 2026
+
+DEPLOYMENT
+1. Keep the previous known-good ZIP before deploying a new release.
+2. Verify Netlify environment variable MAILCHIMP_API_KEY remains configured for Functions. Never place the key in HTML/JS.
+3. Deploy the package. Check the Netlify post-processing log: both Mailchimp rate-limit rules should be accepted.
+4. Verify HTTPS and response headers on the live custom domain.
+5. Smoke-test the homepage, Marketing Leadership Programme, Knowledge Centre, Privacy/Cookies, contact, Playbook and taster journeys.
+
+ROLLBACK
+If a deploy causes a regression, use Netlify Deploys -> select the last known-good production deploy -> Publish deploy. Then investigate offline before redeploying.
+
+FORM TEST MATRIX AFTER EACH MATERIAL RELEASE
+- Contact form: valid submission -> branded thank-you -> appears in Netlify Forms.
+- Playbook without marketing consent -> Netlify submission succeeds; no Mailchimp subscription.
+- Playbook with consent -> Netlify submission succeeds; Mailchimp contact gets Strategic Playbook tag.
+- Taster with consent -> Netlify submission succeeds; Mailchimp contact gets Marketing Director Taster tag.
+- Readiness Score -> result shown and submission saved.
+- Business guide/register-interest forms -> saved in Netlify Forms.
+- Test invalid email and required-field handling.
+
+CONSENT / TRACKING
+Optional Google Analytics 4, Microsoft Clarity and Google Ads measurement must load only after optional-cookie consent. Cookie settings can be reopened from the footer.
+GA4 is NOT activated in this package because no valid GA4 Measurement ID (G-XXXXXXXXXX) exists in the project. Add it only after the real property ID is supplied and connect it to the same consent state.
+
+MANUAL ACCOUNT CONTROLS
+- Enable MFA for Netlify, domain registrar, Mailchimp, Stripe, Google and email accounts.
+- Restrict Netlify team access to people who need production access.
+- Review deploy logs and Function logs after releases.
+- Keep MAILCHIMP_API_KEY rotated if a team member leaves or exposure is suspected.
+- Review Google Ads conversion IDs/labels against the Ads account.
+
+ACCESSIBILITY MANUAL TESTS
+- Keyboard-only navigation including dropdowns, cookie banner and exit modal.
+- VoiceOver on Safari/iPhone and NVDA on Chrome or Firefox.
+- 200% and 400% zoom.
+- Add accurate captions/transcripts to all five learner testimonial videos after transcription; do not auto-invent captions.
+
+LEGAL / PRIVACY
+The website wording has been aligned with the implemented technologies, but policy/legal terms should still be reviewed by a UK privacy/legal professional.

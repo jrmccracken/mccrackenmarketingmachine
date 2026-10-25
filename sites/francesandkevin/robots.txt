@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /order-confirmed/
+Disallow: /thank-you/
+Sitemap: https://francesandkevin.co.uk/sitemap.xml
+Disallow: /playbook-download/
