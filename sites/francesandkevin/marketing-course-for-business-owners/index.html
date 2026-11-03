@@ -1479,8 +1479,9 @@ function switchTab(btn, panelId) {
   });
 
   // Set flag when form submitted
-  overlay.querySelector('form').addEventListener('submit', function(){
-    localStorage.setItem('fk_lead_captured', '1');
+  var exitForm=overlay.querySelector('form');
+  if(exitForm) exitForm.addEventListener('submit', function(){
+    try{localStorage.setItem('fk_lead_captured', '1');}catch(e){}
   });
 })();
 </script>

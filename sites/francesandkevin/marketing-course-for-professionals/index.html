@@ -786,7 +786,7 @@ footer img[src*="cpd" i]{max-width:180px!important;width:auto!important;height:a
 <div class="container">
 <div style="max-width:840px;margin:0 auto;text-align:center">
 <div class="eyebrow" style="justify-content:center">Marketing Director Course</div>
-<h2 class="sh">The UK's CPD-Accredited Marketing Director Course and Training Programme<br/><span>Led by a <a href="https://mccrackenmarketing.co.uk/services/#fractional-cmo" style="color:var(--mg);text-decoration:underline;text-underline-offset:2px">Practising Fractional CMO</a></span></h2>
+<h2 class="sh">The UK's CPD-Accredited Marketing Director Course and Training Programme<br/><span>Led by a Practising Fractional CMO</span></h2>
 <p style="font-size:17px;color:var(--mid);line-height:1.8;margin:24px auto 0;max-width:700px">This programme is built around what the Marketing Director role requires in practice: stronger commercial judgement, clearer leadership, better stakeholder influence and confidence at board level. Designed for Senior Marketing Managers, Heads of Marketing, and marketers ready to step into a Marketing Director or CMO role. James McCracken FCIM has made the transition himself and teaches every session from lived experience.</p>
 </div>
 <div class="director-proof-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px;max-width:900px;margin-left:auto;margin-right:auto">
@@ -1448,7 +1448,7 @@ function switchTab(btn, panelId) {
 <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--mg);margin-bottom:12px">Wait  -  before you go</div>
 <h2 id="exit-title" style="font-family:var(--disp);font-size:32px;color:var(--dark);letter-spacing:1px;margin-bottom:10px;line-height:1">Get the free<br/>Marketing Director Playbook</h2>
 <p style="font-size:15px;color:var(--mid);line-height:1.6;margin-bottom:24px">A 15-page leadership workbook for marketers moving towards Head of Marketing and Marketing Director roles. Free. No spam.</p>
-<form action="/thank-you/" data-netlify="true" method="POST" name="exit-intent" netlify-honeypot="bot-field"><input name="source_page" type="hidden" value=""/><input name="landing_page" type="hidden" value=""/><input name="referrer" type="hidden" value=""/><input name="utm_source" type="hidden" value=""/><input name="utm_medium" type="hidden" value=""/><input name="utm_campaign" type="hidden" value=""/><input name="utm_content" type="hidden" value=""/><input name="utm_term" type="hidden" value=""/><input name="gclid" type="hidden" value=""/>
+<form action="/playbook-download/" data-netlify="true" method="POST" name="exit-intent" netlify-honeypot="bot-field"><input name="source_page" type="hidden" value=""/><input name="landing_page" type="hidden" value=""/><input name="referrer" type="hidden" value=""/><input name="utm_source" type="hidden" value=""/><input name="utm_medium" type="hidden" value=""/><input name="utm_campaign" type="hidden" value=""/><input name="utm_content" type="hidden" value=""/><input name="utm_term" type="hidden" value=""/><input name="gclid" type="hidden" value=""/>
 <input name="form-name" type="hidden" value="exit-intent"/>
 <input name="bot-field" style="display:none" type="hidden"/>
 <div style="display:flex;flex-direction:column;gap:10px">
@@ -1504,8 +1504,9 @@ function switchTab(btn, panelId) {
   });
 
   // Set flag when form submitted
-  overlay.querySelector('form').addEventListener('submit', function(){
-    localStorage.setItem('fk_lead_captured', '1');
+  var exitForm=overlay.querySelector('form');
+  if(exitForm) exitForm.addEventListener('submit', function(){
+    try{localStorage.setItem('fk_lead_captured', '1');}catch(e){}
   });
 })();
 </script>

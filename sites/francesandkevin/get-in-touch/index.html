@@ -1274,7 +1274,20 @@ function switchTab(btn, panelId) {
     if(intro) intro.textContent='You are registering interest in '+names[interest]+'. There is no payment or commitment. We will contact you when the first live cohort dates are confirmed.';
     if(formTitle) formTitle.textContent='Tell us where to send the programme update';
     if(msg && !msg.value) msg.placeholder='Anything you would especially like this programme to cover? (optional)';
-  } else if((ref==='leadership' || ref==='marketing-leadership-programme') && msg && !msg.value) {
+  } else if(ref==='marketing-leadership-programme') {
+    /* arrived from an "Enrol" button: let them pay now, or reserve and be invoiced */
+    if(title) title.innerHTML='Reserve your place<br><span style="color:var(--mg)">for 7 January</span>';
+    if(intro){
+      intro.textContent='The next Marketing Leadership Programme starts on 7 January 2027 and is capped at 10 people. Pay now by card, or send your details and James will confirm your place and send an invoice (useful if your employer is paying).';
+      var pay=document.createElement('p');
+      pay.style.cssText='margin:18px 0 32px';
+      pay.innerHTML='<a href="https://buy.stripe.com/aFacN6f774hu6Ax2VPb7y02" class="btn btn-primary">Pay &pound;799 by card &rarr;</a>';
+      intro.parentNode.insertBefore(pay,intro.nextSibling);
+    }
+    if(formTitle) formTitle.textContent='Or reserve your place and get an invoice';
+    var sb=document.querySelector('form[name="contact"] button[type="submit"]'); if(sb) sb.textContent='Reserve my place';
+    if(msg && !msg.value) msg.placeholder='Anything James should know? For example, if your employer is paying, who the invoice should go to.';
+  } else if(ref==='leadership' && msg && !msg.value) {
     msg.placeholder='What would you like to know about the Marketing Leadership Programme?';
   } else if(ref==='course-fit-call') {
     if(title) title.innerHTML='Book a 15-minute<br><span style="color:var(--mg)">course fit call</span>';

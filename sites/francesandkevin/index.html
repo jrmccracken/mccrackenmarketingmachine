@@ -645,9 +645,8 @@ a.nav-highlight:hover{color:var(--mg)!important;background:var(--mg-pale)!import
 
 
 /* ── Homepage extras ── */
-.hero-new{background:var(--dark);position:relative;overflow:hidden;padding:80px 0 72px}
-.hero-new::before{content:'';position:absolute;top:-120px;right:-80px;width:700px;height:700px;background:radial-gradient(circle,rgba(208,0,204,.18) 0%,transparent 60%);pointer-events:none}
-.hero-new::after{content:'';position:absolute;bottom:-60px;left:60px;width:400px;height:400px;background:radial-gradient(circle,rgba(208,0,204,.08) 0%,transparent 60%);pointer-events:none}
+.hero-new{position:relative;overflow:hidden;padding:80px 0 72px;background:radial-gradient(350px 350px at calc(100% - 270px) 230px,rgba(208,0,204,.18) 0%,transparent 60%) no-repeat,radial-gradient(200px 200px at 260px calc(100% - 140px),rgba(208,0,204,.08) 0%,transparent 60%) no-repeat,var(--dark)}
+/* glows live in the background so they can't cause layout shift */
 .hero-grid{display:grid;grid-template-columns:1fr 420px;gap:64px;align-items:center;position:relative;z-index:1}
 .hero-h1-new{font-family:var(--disp);font-size:clamp(40px,5.5vw,72px);line-height:.95;color:#fff;letter-spacing:1px;text-transform:uppercase;margin-bottom:20px}
 .hero-h1-new span{color:var(--mg);display:block}
@@ -960,7 +959,7 @@ footer img[src*="cpd" i]{max-width:180px!important;width:auto!important;height:a
           Next Marketing Leadership Programme starts 7 January 2027
         </div>
         <h1 class="hero-h1-new">Practical marketing training<br>for marketers<span>ready to lead.</span></h1>
-        <p class="hero-sub-new">Live online, CPD-accredited professional development for experienced marketers moving from delivery into strategic, commercial and board-level responsibility. Led by <a href="https://mccrackenmarketing.co.uk/services/#fractional-cmo" style="color:var(--mg);text-decoration:underline;text-underline-offset:2px">James McCracken FCIM, a practising Fractional CMO</a> with 20+ years in senior marketing roles.</p>
+        <p class="hero-sub-new">Live online, CPD-accredited professional development for experienced marketers moving from delivery into strategic, commercial and board-level responsibility. Led by <a href="#james" style="color:var(--mg);text-decoration:underline;text-underline-offset:2px">James McCracken FCIM, a practising Fractional CMO</a> with 20+ years in senior marketing roles.</p>
         <div class="hero-btns">
           <a href="/marketing-course-for-professionals/" class="btn btn-primary btn-lg">View the Leadership Programme</a>
           <a href="#choose-your-path" class="btn btn-secondary btn-lg" style="border-color:rgba(255,255,255,.25);color:rgba(255,255,255,.8)">Take the readiness score</a>
@@ -1661,7 +1660,7 @@ function switchTab(btn, panelId) {
     <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--mg);margin-bottom:12px">Before you go</div>
     <h2 id="exit-title" style="font-family:var(--disp);font-size:32px;color:var(--dark);letter-spacing:1px;margin-bottom:10px;line-height:1">Get the free<br>Marketing Director Playbook</h2>
     <p style="font-size:15px;color:var(--mid);line-height:1.6;margin-bottom:24px">A 15-page leadership workbook for marketers moving towards Head of Marketing and Marketing Director roles. Free. No spam.</p>
-    <form name="exit-intent" method="POST" action="/thank-you/" data-netlify="true" netlify-honeypot="bot-field"><input type="hidden" name="source_page" value=""><input type="hidden" name="landing_page" value=""><input type="hidden" name="referrer" value=""><input type="hidden" name="utm_source" value=""><input type="hidden" name="utm_medium" value=""><input type="hidden" name="utm_campaign" value=""><input type="hidden" name="utm_content" value=""><input type="hidden" name="utm_term" value=""><input type="hidden" name="gclid" value="">
+    <form name="exit-intent" method="POST" action="/playbook-download/" data-netlify="true" netlify-honeypot="bot-field"><input type="hidden" name="source_page" value=""><input type="hidden" name="landing_page" value=""><input type="hidden" name="referrer" value=""><input type="hidden" name="utm_source" value=""><input type="hidden" name="utm_medium" value=""><input type="hidden" name="utm_campaign" value=""><input type="hidden" name="utm_content" value=""><input type="hidden" name="utm_term" value=""><input type="hidden" name="gclid" value="">
       <input type="hidden" name="form-name" value="exit-intent">
       <input type="hidden" name="bot-field" style="display:none">
       <div style="display:flex;flex-direction:column;gap:10px">
@@ -1718,8 +1717,9 @@ function switchTab(btn, panelId) {
   });
 
   // Set flag when form submitted
-  overlay.querySelector('form').addEventListener('submit', function(){
-    localStorage.setItem('fk_lead_captured', '1');
+  var exitForm=overlay.querySelector('form');
+  if(exitForm) exitForm.addEventListener('submit', function(){
+    try{localStorage.setItem('fk_lead_captured', '1');}catch(e){}
   });
 })();
 </script>
