@@ -1,0 +1,14 @@
+FRANCES & KEVIN — PRIMARY QUERY OWNERSHIP (v27)
+
+marketing training UK / professional marketing training -> /marketing-training-uk/
+marketing courses UK -> /marketing-courses-uk/
+online marketing courses UK -> /blog/online-marketing-courses-uk/
+marketing director course / marketing leadership training -> /marketing-course-for-professionals/
+marketing strategy course -> /marketing-strategy-course/
+SOSTAC training / SOSTAC course -> /sostac-masterclasses/
+SOSTAC framework -> /blog/sostac-framework-explained/
+CPD marketing courses -> /blog/cpd-marketing-courses-uk/
+best CPD marketing courses -> /blog/best-cpd-marketing-courses-uk-2026/
+marketing leadership readiness -> /marketing-leadership-readiness-score/
+
+Rule: do not create another page targeting one of these intents without first reviewing the current owner in Search Console.

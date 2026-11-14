@@ -1,0 +1,44 @@
+Frances & Kevin v17 - Mailchimp setup
+=====================================
+
+Already configured in the site package
+--------------------------------------
+Audience ID: e05bb9a0bf
+Server prefix: us3
+Mailchimp tag: Strategic Playbook
+Netlify Function: /.netlify/functions/mailchimp-playbook
+
+What the playbook form now does
+-------------------------------
+1. Captures every playbook request in Netlify Forms.
+2. Unlocks the PDF immediately for every visitor.
+3. If the visitor opts in to email, the Netlify Function adds/updates them in Mailchimp.
+4. The function applies the Mailchimp tag: Strategic Playbook.
+5. Your Mailchimp Automation Flow can trigger when that tag is added.
+
+ONE SECRET YOU MUST ADD IN NETLIFY
+----------------------------------
+Do NOT put the API key in the website files.
+
+In Netlify, open the Frances & Kevin project and add this environment variable:
+
+Key: MAILCHIMP_API_KEY
+Value: your Mailchimp API key
+
+Make sure its scope includes Functions, then redeploy v17.
+
+Mailchimp automation
+--------------------
+Create an Automation Flow / Customer Journey for the Frances & Kevin audience:
+Trigger: Tag added -> Strategic Playbook
+First action: Send email immediately
+Suggested subject: Your Marketing Manager to Marketing Director Playbook
+PDF URL: https://francesandkevin.co.uk/assets/marketing-manager-to-marketing-director-playbook.pdf
+
+Important consent behaviour
+---------------------------
+The PDF unlocks whether or not the visitor opts into email marketing.
+Only visitors who tick the email opt-in are synced as new subscribed contacts in Mailchimp.
+This prevents the lead magnet itself from silently subscribing people to marketing.
+
+Existing unsubscribed Mailchimp contacts are not forcibly resubscribed by the integration.
