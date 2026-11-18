@@ -209,7 +209,7 @@ export function PaidPage() {
   const keys = ['cost', 'impressions', 'clicks', 'ctr', 'cpc', 'conversions', 'cpa', 'conv_rate', 'roas'];
   return (
     <div className="stack">
-      <Head title="Paid: Google Ads & ChatGPT Ads" sub="Side-by-side so you can move budget to whichever converts cheaper" days={days} setDays={setDays}
+      <Head title="Paid ads" sub="Google Ads and ChatGPT Ads side by side" days={days} setDays={setDays}
         demo={g.data.info.demo || o.data.info.demo} />
       {!platforms.length ? <NoData label="paid" /> : <>
         <Card title="Platform comparison" sub={`Last ${days} days, change vs previous period`}>

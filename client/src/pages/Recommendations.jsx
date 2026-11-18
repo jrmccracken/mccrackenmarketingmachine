@@ -19,7 +19,7 @@ export default function Recommendations({ status }) {
   const setStatus = (id, s) => run(id, () => api.patch(`/recommendations/${id}`, { status: s }).then(reload));
   return (
     <div className="stack">
-      <PageHead title="Recommendations" sub="What to do next across every channel. Rules run after each sync; the AI strategist adds a weekly plan.">
+      <PageHead title="Recommendations" sub="Suggested actions across every channel, updated after each sync">
         <button className="btn" disabled={busy === 'refresh'} onClick={() => run('refresh', () => api.post('/recommendations/refresh').then(reload), (r) => `${r.count} rule-based recommendations`)}>Re-run rules</button>
         <button className="btn primary" disabled={busy === 'ai' || !status?.ai} title={status?.ai ? '' : 'Add an Anthropic API key in Settings'}
           onClick={() => run('ai', () => api.post('/brief').then(() => { reload(); briefs.reload(); }), 'AI strategist added new recommendations')}>

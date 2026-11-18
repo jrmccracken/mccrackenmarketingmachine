@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import { api } from '../lib/api.js';
 import { KPI, fmt } from '../lib/format.js';
 import { Sparkline } from './Chart.jsx';
+import { ArrowDownRight, ArrowUpRight, X } from 'lucide-react';
 
 export function useFetch(url, deps = []) {
   const [state, setState] = useState({ data: null, error: null, loading: true });
@@ -35,10 +36,10 @@ export function useAction() {
   return [busy, run];
 }
 
-export function PageHead({ title, sub, eyebrow = 'McCracken Marketing', children }) {
+export function PageHead({ title, sub, eyebrow, children }) {
   return (
     <div className="page-head">
-      <div>{eyebrow && <div className="eyebrow" style={{ marginBottom: 8 }}>{eyebrow}</div>}<h1>{title}</h1>{sub && <p>{sub}</p>}</div>
+      <div>{eyebrow && <div className="eyebrow" style={{ marginBottom: 4 }}>{eyebrow}</div>}<h1>{title}</h1>{sub && <p>{sub}</p>}</div>
       {children && <div className="toolbar">{children}</div>}
     </div>
   );
@@ -63,7 +64,7 @@ export function Delta({ value, up = true }) {
   const good = up == null ? null : (value > 0) === up;
   return (
     <span className={`stat-delta ${good == null ? 'secondary' : good ? 'good' : 'bad'}`}>
-      {value > 0 ? '▲' : '▼'} {fmt.pct(Math.abs(value), 0)} <span className="muted">vs prev.</span>
+      {value > 0 ? <ArrowUpRight size={14} style={{ verticalAlign: -2 }} /> : <ArrowDownRight size={14} style={{ verticalAlign: -2 }} />}{fmt.pct(Math.abs(value), 0)} <span className="muted delta-ctx" style={{ fontWeight: 400 }}>vs previous period</span>
     </span>
   );
 }
@@ -95,7 +96,7 @@ export function Priority({ p }) {
 }
 
 export function DemoBadge({ show }) {
-  return show ? <span className="badge demo" title="Illustrative data: connect the integration to see real numbers">Demo data</span> : null;
+  return show ? <span className="badge demo" title="Illustrative data: connect the integration to see real numbers">Demo</span> : null;
 }
 
 export function Modal({ title, onClose, children, wide, footer }) {
@@ -107,7 +108,7 @@ export function Modal({ title, onClose, children, wide, footer }) {
   return (
     <div className="modal-bg" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <div className={`modal ${wide ? 'wide' : ''}`} role="dialog" aria-label={title}>
-        <div className="row between"><h2>{title}</h2><button className="btn ghost sm" onClick={onClose} aria-label="Close">✕</button></div>
+        <div className="row between"><h2>{title}</h2><button className="btn ghost sm" onClick={onClose} aria-label="Close"><X /></button></div>
         {children}
         {footer && <div className="row" style={{ justifyContent: 'flex-end' }}>{footer}</div>}
       </div>

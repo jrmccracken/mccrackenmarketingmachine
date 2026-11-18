@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Route, Routes, useLocation } from 'react-router-dom';
+import { BarChart3, Building2, Globe, Lightbulb, Mail, Menu, Plug, Radar as RadarIcon, Search, Send, Settings as SettingsIcon, Share2, Users, LayoutDashboard } from 'lucide-react';
 import { api } from './lib/api.js';
 import Overview from './pages/Overview.jsx';
 import { EmailPage, SocialPage, WebsitePage, SearchPage, PaidPage } from './pages/Channels.jsx';
@@ -13,10 +14,10 @@ import Integrations from './pages/Integrations.jsx';
 import Settings from './pages/Settings.jsx';
 
 const NAV = [
-  ['Workspace', [['/', 'Command centre'], ['/recommendations', 'Recommendations', 'recommendations']]],
-  ['Performance', [['/email', 'Outbound email'], ['/social', 'Social'], ['/website', 'Website (GA4)'], ['/search', 'Search Console'], ['/paid', 'Paid: Google & ChatGPT']]],
-  ['Growth', [['/visitors', 'Company visitors'], ['/radar', 'Market radar', 'opportunities'], ['/leads', 'Leads', 'due'], ['/outreach', 'Outreach', 'drafts']]],
-  ['Setup', [['/integrations', 'Integrations'], ['/settings', 'Settings']]],
+  ['Workspace', [['/', 'Overview', null, LayoutDashboard], ['/recommendations', 'Recommendations', 'recommendations', Lightbulb]]],
+  ['Performance', [['/email', 'Outbound email', null, Mail], ['/social', 'Social', null, Share2], ['/website', 'Website', null, Globe], ['/search', 'Search Console', null, Search], ['/paid', 'Paid ads', null, BarChart3]]],
+  ['Growth', [['/visitors', 'Company visitors', null, Building2], ['/radar', 'Market radar', 'opportunities', RadarIcon], ['/leads', 'Leads', 'due', Users], ['/outreach', 'Outreach', 'drafts', Send]]],
+  ['Setup', [['/integrations', 'Integrations', null, Plug], ['/settings', 'Settings', null, SettingsIcon]]],
 ];
 
 export default function App() {
@@ -34,22 +35,22 @@ export default function App() {
   return (
     <div className="app">
       <div className="mobile-bar">
-        <button className="btn sm" onClick={() => setOpen(!open)} aria-label="Menu">☰</button>
+        <button className="btn ghost sm" onClick={() => setOpen(!open)} aria-label="Menu"><Menu /></button>
         <strong>Marketing Machine</strong>
-        <span />
       </div>
       <aside className={`sidebar ${open ? 'open' : ''}`}>
         <div className="brand">
-          <div className="logo" aria-hidden="true"><span>McCracken</span><span>Marketing</span></div>
-          <div><strong>Marketing Machine</strong><small>Internal workspace</small></div>
+          <div className="logo" aria-hidden="true">M</div>
+          <div><strong>Marketing Machine</strong><small>McCracken Marketing</small></div>
         </div>
         <nav className="nav">
           {NAV.map(([group, items]) => (
             <div key={group}>
               <div className="nav-group">{group}</div>
-              {items.map(([to, label, countKey]) => (
+              {items.map(([to, label, countKey, Icon]) => (
                 <NavLink key={to} to={to} end={to === '/'}>
-                  <span>{label}</span>
+                  <Icon aria-hidden="true" />
+                  <span className="label">{label}</span>
                   {countKey && status?.counts?.[countKey] > 0 && <span className="count">{status.counts[countKey]}</span>}
                 </NavLink>
               ))}
@@ -57,9 +58,9 @@ export default function App() {
           ))}
         </nav>
         <div className="sidebar-foot">
-          <span>AI strategist: {status?.ai ? 'on' : 'off (add key in Settings)'}</span>
-          <span>Email sending: {status?.smtp ? 'SMTP connected' : 'not connected'}</span>
-          {status?.demo && <span>Showing demo data for unconnected channels</span>}
+          <span className="s"><i className={status?.ai ? 'on' : ''} />AI strategist {status?.ai ? 'on' : 'off'}</span>
+          <span className="s"><i className={status?.smtp ? 'on' : ''} />Email sending {status?.smtp ? 'connected' : 'not connected'}</span>
+          {status?.demo && <span className="s"><i />Some channels show demo data</span>}
           {status?.version && <span>Version {status.version}</span>}
         </div>
       </aside>

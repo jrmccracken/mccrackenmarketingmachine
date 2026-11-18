@@ -182,7 +182,7 @@ function PipelinePanel({ lead, onUse }) {
         {p.body && <>
           <Seg options={[['first', 'First email'], ['fu', 'Follow-up']]} value={tab} onChange={setTab} />
           <div><strong>Subject:</strong> {subject}</div>
-          <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', margin: 0, padding: 12, background: 'var(--band)', border: '1px solid var(--border)' }}>{body}</pre>
+          <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', margin: 0, padding: 12, background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 8 }}>{body}</pre>
           <div className="row">
             <a className="btn sm primary" href={gmail} target="_blank" rel="noreferrer">Open in Gmail</a>
             <button className="btn sm" onClick={() => copy('s', subject)}>{copied === 's' ? 'Copied' : 'Copy subject'}</button>

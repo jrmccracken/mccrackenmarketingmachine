@@ -33,7 +33,7 @@ export default function Overview({ status }) {
 
   return (
     <div className="stack">
-      <PageHead title="Command centre" sub={`${fmt.date(data.snapshot.window.from)} to ${fmt.date(data.snapshot.window.to)}, compared with the previous ${days} days`}>
+      <PageHead title="Overview" sub={`${fmt.date(data.snapshot.window.from)} to ${fmt.date(data.snapshot.window.to)}, compared with the previous ${days} days`}>
         <Seg options={RANGES} value={days} onChange={setDays} />
       </PageHead>
 
@@ -81,7 +81,7 @@ export default function Overview({ status }) {
       </div>
 
       <div className="grid cols-3">
-        <Card className="span-2" title="What to do next" sub="Ranked by impact. Updated after every sync."
+        <Card className="span-2" title="Recommended next steps" sub="Highest impact first"
           actions={<Link className="btn sm" to="/recommendations">All recommendations</Link>}>
           {data.recommendations.length ? data.recommendations.map((r) => (
             <div className="rec" key={r.id}>
@@ -94,7 +94,7 @@ export default function Overview({ status }) {
               <button className="btn sm" disabled={busy === r.id}
                 onClick={() => run(r.id, () => api.patch(`/recommendations/${r.id}`, { status: 'done' }).then(reload), 'Marked done')}>Done</button>
             </div>
-          )) : <div className="empty">Nothing urgent. Nice.</div>}
+          )) : <div className="empty">No recommendations right now.</div>}
         </Card>
 
         <div className="stack">
@@ -128,10 +128,10 @@ export default function Overview({ status }) {
         </div>
       </Card>
 
-      <Card title="Weekly strategy brief" sub={data.brief ? `Written ${fmt.ago(data.brief.created_at)}` : 'The AI strategist reads every channel and writes the plan for the week.'}
+      <Card title="Weekly strategy brief" sub={data.brief ? `Written ${fmt.ago(data.brief.created_at)}` : 'A weekly summary of performance across every channel, with suggested priorities.'}
         actions={<button className="btn primary sm" disabled={busy === 'brief' || !status?.ai}
           title={status?.ai ? '' : 'Add an Anthropic API key in Settings'}
-          onClick={() => run('brief', () => api.post('/brief').then(reload), 'Brief written')}>{busy === 'brief' ? 'Thinking…' : 'Write this week\'s brief'}</button>}>
+          onClick={() => run('brief', () => api.post('/brief').then(reload), 'Brief written')}>{busy === 'brief' ? 'Writing…' : 'Generate brief'}</button>}>
         {data.brief ? <Markdown text={data.brief.body} /> : <div className="empty">{status?.ai ? 'No brief yet. Generate one above.' : 'Add an Anthropic API key in Settings to switch on the AI strategist.'}</div>}
       </Card>
     </div>
